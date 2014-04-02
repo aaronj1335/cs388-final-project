@@ -19,4 +19,4 @@ There are 3 levels of parallelism we believe we can exploit in running the Viter
 
 [scaling]: http://en.wikipedia.org/wiki/Scalability#Weak_versus_strong_scaling
 [tbb]: http://www.threadingbuildingblocks.org/docs/help/reference/algorithms/range_concept/blocked_range2d_cls.htm
-
+[parscan]: http://en.wikipedia.org/wiki/Prefix_sum#Parallel_algorithm
