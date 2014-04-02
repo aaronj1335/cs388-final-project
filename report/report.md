@@ -1,74 +1,22 @@
-# project problem
+# CS 388 Final Project Proposal
 
-recursion:
+We propose implementing a parallel version of the Viterbi algorithm and characterizing its performance over a range of workloads. We plan on testing a range of sizes around the scale of the Wall Street Journal data set from the Penn Treebank. We plan to run the algorithm on the TACC cluster to find both [strong and weak scaling][scaling] characteristics.
 
-$$
-v_{i,j} = b_j(i) \sum_{k=0}^nv_{i-1,k}a_{k,j}
-$$
+There are 3 levels of parallelism we believe we can exploit in running the Viterbi algorithm on a significant dataset:
 
-expansion:
+1. **Parallelizing across sentences**: When calculating either sequence labels or observation probability, each sentence is considered independently. This presents an easy opportunity to parallelize, since each calculation is independent of the other. In the case of observation probability, the results can be combined via a parallel reduction.
 
-$$\begin{align}
-v_0 & = [v_{0,0} , & v_{0,1}] \\\\
-v_1 & = [b_0(1)(a_{0,0}v_{0,0} + a_{1,0}v_{0,1}) , & b_1(1)(a_{0,1}v_{0,0} + a_{1,1}v_{0,1})] \\\\
-    & = [a_{0,0}b_0(1)v_{0,0} + a_{1,0}b_0(1)v_{0,1} , & a_{0,1}b_1(1)v_{0,0} + a_{1,1}b_1(1)v_{0,1}] \\\\
-v_2 & = [b_0(2)(b_0(1)(a_{0,0}v_{0,0} + a_{1,0}v_{0,1})a_{0,0} + b_1(1)(a_{0,1}v_{0,0} + a_{1,1}v_{0,1})a_{1,0}) , & b_1(2)(b_0(1)(a_{0,0}v_{0,0} + a_{1,0}v_{0,1})a_{0,1} + b_1(1)(a_{0,1}v_{0,0} + a_{1,1}v_{0,1})a_{1,1})] \\\\
-    & = [a_{0,0}^2b_0(1)b_0(2)v_{0,0} + a_{0,0}a_{1,0}b_0(1)b_0(2)v_{0,1} + a_{0,1}a_{1,0}b_0(2)b_1(1)v_{0,0}, a_{1,0}a_{1,1}b_0(2)b_1(1)v_{0,1} , & \dots]
-\end{align}$$
+2. **Parallelizing within sequence steps**: The Viterbi algorithm performs an $O(n^2)$ calculation for each item in the sequence. This can be viewed as a matrix-vector multiplication with a vector of 1's, so applying a parallel matrix-vector routine, such as one of those found in [Intel's Thread Building Blocks][tbb] library should provide performance benefits.
 
-# homework problem
+3. **Parallelizing across sequence items**: The dynamic programming algorithm Viterbi uses requires each step to use the previous step's value to calculate. The recursion is as follows:
 
-recursion:
+  $$
+  v_{i,j} = b_j(i) \sum_{k=0}^nv_{i-1,k}a_{k,j}
+  $$
 
-$$
-x_i = a_ix_{i-1} + b_i
-$$
+  Although this calculation cannot be parallelized across sequence steps as-is, it should be possible if the recursion can be converted to an associative operation. If so, then a [parallel scan][parscan] algorithm can be used to reduce the $O(n)$ operations to $O(\log n)$.
 
-expansion:
 
-$$\begin{align}
-x_0 & = x_0 \\\\
-x_1 & = a_1x_0 + b_1 \\\\
-x_2 & = a_2a_1x_0 + a_2b_1 + b_2 \\\\
-x_3 & = a_3a_2a_1x_0 + a_3a_2b_1 + a_3b_2 + b_3 \\\\
-x_4 & = a_4a_3a_2a_1x_0 + a_4a_3a_2b_1 + a_4a_3b_2 + a_4b_3 + b_4 \\\\
-\end{align}$$
-
-If we define $c_i$ as $x_0$ times the prefix product of the $a_i$ values
-(letting $a_0 = 1$), we get:
-
-$$\begin{align}
-x_0 & = c_0 \\\\
-x_1 & = c_1 + b_1 \\\\
-x_2 & = c_2 + \frac{c_2}{c_1}b_1 + b_2 \\\\
-x_3 & = c_3 + \frac{c_3}{c_1}b_1 + \frac{c_3}{c_2}b_2 + b_3 \\\\
-x_4 & = c_4 + \frac{c_4}{c_1}b_1 + \frac{c_4}{c_2}b_2 + \frac{c_4}{c_3}b_3 + b_4 \\\\
-\end{align}$$
-
-And factor out the $c_i$ value:
-
-$$\begin{align}
-x_0 & = c_0\left(\frac{1}{1}\right) \\\\
-x_1 & = c_1\left(\frac{1}{1} + \frac{b_1}{c_1}\right) \\\\
-x_2 & = c_2\left(\frac{1}{1} + \frac{b_1}{c_1} + \frac{b_2}{c_2}\right) \\\\
-x_3 & = c_3\left(\frac{1}{1} + \frac{b_1}{c_1} + \frac{b_2}{c_2} + \frac{b_3}{c_3}\right) \\\\
-x_4 & = c_4\left(\frac{1}{1} + \frac{b_1}{c_1} + \frac{b_2}{c_2} + \frac{b_3}{c_3} + \frac{b_4}{c_4}\right) \\\\
-\end{align}$$
-
-So it's clear that if we define $d_i = \frac{b_i}{c_i}$, and set $e_i$ to the
-prefix sum of $d_i$, we can accomplish this by doing two scans (one for $c_i$
-and one for $e_i$), and then setting $x_i = c_id_i$. Work-depth pseudocode:
-
-      function operation(a, b, n)
-      % assume 'multiply' and 'add' are associative operations and 'scan' is a
-      % parallel scan function like the one from class
-      c = scan(a, multiply)
-      parfor i=0:n-1
-        d(i) = b(i) / c(i)
-      end
-      e = scan(d, add)
-      parfor i=0:n-1
-        x(i) = c(i) * e(i)
-      end
-      return e
+[scaling]: http://en.wikipedia.org/wiki/Scalability#Weak_versus_strong_scaling
+[tbb]: http://www.threadingbuildingblocks.org/docs/help/reference/algorithms/range_concept/blocked_range2d_cls.htm
 
