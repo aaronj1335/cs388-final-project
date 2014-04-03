@@ -1,0 +1,8 @@
+.DS_STORE
+*.swp
+*.gz
+*.log
+*.blg
+*.bbl
+*.aux
+report/report.html
