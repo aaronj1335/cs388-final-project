@@ -7,4 +7,4 @@ CS 388 Parallel Viterbi
 > 
 > Calvin MacKenzie
 
-## [Project Proposal](report/report.pdf)
+[Project Proposal](report/report.pdf)
