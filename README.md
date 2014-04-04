@@ -1,7 +1,6 @@
-CS 388 Parallel Viterbi
+CS 388 Spring 2014 Final Project
 ===================
-## Final Project
-### CS 388 Spring 2014
+## Parallel Viterbi
 
 > Aaron Stacy
 > 
