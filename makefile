@@ -2,11 +2,15 @@ CC = g++
 GCC = gcc
 FLAGS = -Wall -Werror
 LIBRARIES = -fopenmp
-Q2_TARGET = q2
-Q3_TARGET = q3
+Q2_TARGET = main
 
 ifeq ($(shell uname), Darwin)
 	CC = g++-4.8
+	# if version 4.8 does not exist, check 4.7
+	ifneq ("$(wildcard $(CC))","")
+	else
+		CC = g++-4.7
+	endif
 endif
 
 SRC_DIR = src
@@ -14,9 +18,9 @@ OBJ_DIR = obj
 SCRATCH ?= .
 VAR_DIR = $(SCRATCH)/var
 
-INPUTS = $(wildcard $(SRC_DIR)/*.cc)
+INPUTS = $(wildcard $(SRC_DIR)/*.cpp)
 INPUTS_TMP = $(subst $(SRC_DIR),$(OBJ_DIR),$(INPUTS))
-OBJECTS = $(INPUTS_TMP:%.cc=%.o)
+OBJECTS = $(INPUTS_TMP:%.cpp=%.o)
 Q2_OBJECTS = $(filter-out $(OBJ_DIR)/$(Q3_TARGET).o,$(OBJECTS))
 Q3_OBJECTS = $(filter-out $(OBJ_DIR)/$(Q2_TARGET).o,$(OBJECTS))
 DEPFILES = $(OBJECTS:%.o=%.d)
@@ -42,18 +46,15 @@ REPORT_SRC = report/report.md
 
 # main application
 
-all: $(Q2_TARGET) $(Q3_TARGET)
+all: $(Q2_TARGET)
 
 $(Q2_TARGET): $(Q2_OBJECTS)
 	$(CC) $(FLAGS) $(LIBRARIES) -o $@ $(Q2_OBJECTS)
 
-$(Q3_TARGET):
-	$(GCC) -fopenmp -std=c11 -o search $(SRC_DIR)/q3.c
-
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cc | $(OBJ_DIR)
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CC) $(FLAGS) $(LIBRARIES) -c -o $@ $<
 
-$(OBJ_DIR)/%.d: $(SRC_DIR)/%.cc | $(OBJ_DIR)
+$(OBJ_DIR)/%.d: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CC) $(FLAGS) $(LIBRARIES) -M -MF $@ -MT $(@:%.d=%.o) $<
 
 $(OBJ_DIR):
