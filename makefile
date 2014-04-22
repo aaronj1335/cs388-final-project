@@ -1,28 +1,38 @@
-CC = g++
-GCC = gcc
+CPP = g++
 FLAGS = -Wall -Werror
-LIBRARIES = -fopenmp
-Q2_TARGET = main
+MAIN_TARGET_BASE = main
+TEST_TARGET_BASE = test
 
-ifeq ($(shell uname), Darwin)
-	CC = g++-4.8
-	# if version 4.8 does not exist, check 4.7
-	ifneq ("$(wildcard $(CC))","")
-	else
-		CC = g++-4.7
-	endif
+# compiler dance:
+# - default to g++
+# - but use g++-4.7/g++-4.8 if they're on the $PATH
+CPP47 = $(shell which c++-4.7)
+CPP48 = $(shell which c++-4.8)
+ifneq ($(wildcard $(CPP47)),)
+	CPP = g++-4.7
+	LIBRARIES = -L$(HOME)/boost/lib -I$(HOME)/boost/include
 endif
+
+ifneq ($(wildcard $(CPP48)),)
+	CPP = g++-4.8
+	LIBRARIES = -L$(HOME)/boost/lib -I$(HOME)/boost/include
+endif
+
+LIBRARIES += -fopenmp -lboost_filesystem -lboost_system
 
 SRC_DIR = src
 OBJ_DIR = obj
 SCRATCH ?= .
 VAR_DIR = $(SCRATCH)/var
+BIN_DIR = bin
+MAIN_TARGET = $(BIN_DIR)/$(MAIN_TARGET_BASE)
+TEST_TARGET = $(BIN_DIR)/$(TEST_TARGET_BASE)
 
 INPUTS = $(wildcard $(SRC_DIR)/*.cpp)
 INPUTS_TMP = $(subst $(SRC_DIR),$(OBJ_DIR),$(INPUTS))
 OBJECTS = $(INPUTS_TMP:%.cpp=%.o)
-Q2_OBJECTS = $(filter-out $(OBJ_DIR)/$(Q3_TARGET).o,$(OBJECTS))
-Q3_OBJECTS = $(filter-out $(OBJ_DIR)/$(Q2_TARGET).o,$(OBJECTS))
+MAIN_OBJECTS = $(filter-out $(OBJ_DIR)/$(TEST_TARGET_BASE).o,$(OBJECTS))
+TEST_OBJECTS = $(filter-out $(OBJ_DIR)/$(MAIN_TARGET_BASE).o,$(OBJECTS))
 DEPFILES = $(OBJECTS:%.o=%.d)
 
 PERF_FILES = $(VAR_DIR)/1d.txt $(VAR_DIR)/4d.txt
@@ -46,25 +56,31 @@ REPORT_SRC = report/report.md
 
 # main application
 
-all: $(Q2_TARGET)
+all: $(MAIN_TARGET) $(TEST_TARGET)
 
-$(Q2_TARGET): $(Q2_OBJECTS)
-	$(CC) $(FLAGS) $(LIBRARIES) -o $@ $(Q2_OBJECTS)
+$(MAIN_TARGET): $(MAIN_OBJECTS) | $(BIN_DIR)
+	$(CPP) $(FLAGS) $(LIBRARIES) -o $@ $(MAIN_OBJECTS)
+
+$(TEST_TARGET): $(TEST_OBJECTS) | $(BIN_DIR)
+	$(CPP) $(FLAGS) $(LIBRARIES) -o $@ $(TEST_OBJECTS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CC) $(FLAGS) $(LIBRARIES) -c -o $@ $<
+	$(CPP) $(FLAGS) $(LIBRARIES) -c -o $@ $<
 
 $(OBJ_DIR)/%.d: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CC) $(FLAGS) $(LIBRARIES) -M -MF $@ -MT $(@:%.d=%.o) $<
+	$(CPP) $(FLAGS) $(LIBRARIES) -M -MF $@ -MT $(@:%.d=%.o) $<
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)
+
+$(BIN_DIR):
+	mkdir $(BIN_DIR)
 
 
 # running, testing, etc
 
 test: all
-	@test/test
+	@$(TEST_TARGET)
 
 $(VAR_DIR):
 	mkdir $@
@@ -75,26 +91,6 @@ $(VAR_DIR)/1d.txt: $(VAR_DIR)
 $(VAR_DIR)/4d.txt: $(VAR_DIR)
 	@python test/perfdata.py 4 > $@
 
-# this is not used b/c it was slow and when doing perf we could care less about
-# the actual values
-perfdata: $(PERF_FILES)
-
-$(RESULTS_DIR):
-	mkdir -p $@
-
-perf: all | $(RESULTS_DIR)
-	time ./$(Q2_TARGET) -nm 1        1>/dev/null 3>$(RESULTS_DIR)/1d_0001M.txt
-	time ./$(Q2_TARGET) -nm 10       1>/dev/null 3>$(RESULTS_DIR)/1d_0010M.txt
-	time ./$(Q2_TARGET) -nm 100      1>/dev/null 3>$(RESULTS_DIR)/1d_0100M.txt
-	time ./$(Q2_TARGET) -nm 300      1>/dev/null 3>$(RESULTS_DIR)/1d_0300M.txt
-	time ./$(Q2_TARGET) -nm 1000     1>/dev/null 3>$(RESULTS_DIR)/1d_1000M.txt
-	time ./$(Q2_TARGET) -nm 300 -d 4 1>/dev/null 3>$(RESULTS_DIR)/4d_0300M.txt
-
-scaling: all | $(RESULTS_DIR)
-	time ./$(Q2_TARGET) -nm 10       1>/dev/null 3>$(RESULTS_DIR)/1d_0010M.txt
-	time ./$(Q2_TARGET) -nm 60       1>/dev/null 3>$(RESULTS_DIR)/1d_0060M.txt
-	time ./$(Q2_TARGET) -nm 120      1>/dev/null 3>$(RESULTS_DIR)/1d_0120M.txt
-
 
 # report
 
@@ -104,29 +100,11 @@ $(REPORT_HTML): $(REPORT_SRC) etc/template.html etc/marked.js
 	python etc/buildreport.py < $< > $@
 
 
-# submission -- abhi you'll need to update this accordingly
-
-zip: clean
-	rm -rf ../cse392asab_stacy || true
-	mkdir ../cse392asab_stacy
-	cp -r ./ ../cse392asab_stacy/
-	rm -rf ../cse392asab_stacy/.git
-	(cd ../ && zip -r cse392asab_stacy_aaron_hwk2.zip cse392asab_stacy )
-	rm -rf ../cse392asab_stacy
-
-zip_abhi: clean
-	rm -rf ../cse392asab_bhaduri || true
-	mkdir ../cse392asab_bhaduri
-	cp -r ./ ../cse392asab_bhaduri/
-	rm -rf ../cse392asab_bhaduri/.git
-	(cd ../ && zip -r cse392asab_bhaduri_abhishek_hwk2.zip cse392asab_bhaduri )
-	rm -rf ../cse392asab_bhaduri
-
 # cleanup
 
 .PHONY: clean
 clean:
-	-rm -rf $(OBJ_DIR) $(VAR_DIR) $(Q2_TARGET)
+	-rm -rf $(OBJ_DIR) $(VAR_DIR) $(MAIN_TARGET)
 
 -include $(DEPFILES)
 
