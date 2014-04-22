@@ -9,11 +9,11 @@ using namespace std;
 using namespace boost::filesystem;
 
 int main(int argc, char* argv[]) {
-  path p = path();
+  ifstream f3("test/threelines.txt");
+  ifstream f4("test/fourlines.txt");
 
-  find_file(path("data/penn-treebank-wsj"), string("wsj_2178.pos"), p);
-
-  assert(p.native() == string("data/penn-treebank-wsj/21/wsj_2178.pos"));
+  assert(distance(line_iterator(f3), line_iterator()) == 3);
+  assert(distance(line_iterator(f4), line_iterator()) == 4);
 
   return 0;
 }
