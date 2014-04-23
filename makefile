@@ -1,5 +1,7 @@
 CPP = g++
-FLAGS = -Wall -Werror
+# we need -Wno-unused-local-typedefs because of something included for boost
+# ranges
+FLAGS = -Wall -Werror -Wno-unused-local-typedefs
 MAIN_TARGET_BASE = main
 TEST_TARGET_BASE = test
 
@@ -16,6 +18,10 @@ endif
 ifneq ($(wildcard $(CPP48)),)
 	CPP = g++-4.8
 	LIBRARIES = -L$(HOME)/boost/lib -I$(HOME)/boost/include
+endif
+
+ifeq ($(DEBUG), 1)
+	FLAGS += -g
 endif
 
 LIBRARIES += -fopenmp -lboost_filesystem -lboost_system
@@ -67,9 +73,6 @@ $(TEST_TARGET): $(TEST_OBJECTS) | $(BIN_DIR)
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
 	$(CPP) $(FLAGS) $(LIBRARIES) -c -o $@ $<
 
-$(OBJ_DIR)/%.d: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CPP) $(FLAGS) $(LIBRARIES) -M -MF $@ -MT $(@:%.d=%.o) $<
-
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)
 
@@ -77,9 +80,17 @@ $(BIN_DIR):
 	mkdir $(BIN_DIR)
 
 
+# dependencies
+
+$(OBJ_DIR)/%.d: $(SRC_DIR)/%.hpp | $(OBJ_DIR)
+	$(CPP) $(FLAGS) $(LIBRARIES) -M -MF $@ -MT $(@:%.d=%.o) $<
+
+deps: $(DEPFILES)
+
+
 # running, testing, etc
 
-test: all
+test: $(TEST_TARGET)
 	@$(TEST_TARGET)
 
 $(VAR_DIR):
@@ -91,6 +102,8 @@ $(VAR_DIR)/1d.txt: $(VAR_DIR)
 $(VAR_DIR)/4d.txt: $(VAR_DIR)
 	@python test/perfdata.py 4 > $@
 
+debug: all
+	lldb -- ./$(TEST_TARGET)
 
 # report
 

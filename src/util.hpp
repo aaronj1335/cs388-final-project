@@ -1,32 +1,32 @@
 #ifndef __util__
 #define __util__
 
-#include <boost/filesystem.hpp>
-#include <iostream>
-#include <fstream>
+#include <istream>
 
-bool find_file( const boost::filesystem::path& dir_path,
-                const std::string& file_name,
-                boost::filesystem::path& path_found);
+#include <boost/iterator/iterator_facade.hpp>
 
-// used for iterating over lines in a file:
-//
-//   line_iterator in(std::istream("file.txt"));
-//   ifstream inf("test/threelines.txt");
-//   for (line_iterator it(inf); it != line_iterator(); it++)
-//     cout << "line: " << *it << endl;
-//
-class line {
-  std::string data;
+class line_iterator :
+  public boost::iterator_facade<
+    line_iterator,                    // this class
+    std::istream,                     // the thing over which we're iterating
+    std::input_iterator_tag,          // the iterator concept
+    std::string> {                    // the deref type
 
-  friend std::istream& operator>>(std::istream& is, line& line);
+  std::istream* is;
+  std::string line;
 
-  friend std::ostream& operator<<(std::ostream& os, const line& line);
+  friend class boost::iterator_core_access;
+
+  void increment();
+
+  bool equal(const line_iterator& other) const;
+
+  const std::string& dereference() const;
 
   public:
-    const std::string& string() const;
-};
+    line_iterator() : is(NULL), line() {}
 
-typedef std::istream_iterator<line> line_iterator;
+    explicit line_iterator(std::istream* is);
+};
 
 #endif
