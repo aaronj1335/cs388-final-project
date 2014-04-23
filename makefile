@@ -1,7 +1,10 @@
 CPP = g++
 # we need -Wno-unused-local-typedefs because of something included for boost
 # ranges
-FLAGS = -Wall -Werror -Wno-unused-local-typedefs
+#
+# we need -Wno-return-local-addr because file_line_iterator::dereference()
+# returns a reference to a string. i haven't found a way around this.
+FLAGS = -Wall -Werror -Wno-unused-local-typedefs -Wno-return-local-addr
 MAIN_TARGET_BASE = main
 TEST_TARGET_BASE = test
 
