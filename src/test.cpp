@@ -41,6 +41,24 @@ void run_tests() {
       count++;
     assert(count == 688892);
   }
+
+  {
+    vector<string> expected, actual;
+    expected.push_back("coffee");
+    expected.push_back("beer");
+    expected.push_back("whiskey");
+    expected.push_back("purple drank");
+    expected.push_back("foo");
+    expected.push_back("bar");
+    expected.push_back("baz");
+
+    recursive_directory_iterator rdi("test/simple");
+
+    for (file_line_iterator it(&rdi), end; it != end; ++it)
+      actual.push_back(*it);
+
+    assert(expected == actual);
+  }
 }
 
 int main(int argc, char* argv[]) {
