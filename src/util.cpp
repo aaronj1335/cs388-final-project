@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <string.h>
 
 #include "util.hpp"
 
@@ -6,13 +7,17 @@ using namespace std;
 using namespace boost::filesystem;
 
 
+/*******************************************************************************
+ * line_iterator
+ */
+
 void line_iterator::increment() {
   if (is && !getline(*is, line))
     is = NULL;
 }
 
 bool line_iterator::equal(const line_iterator& other) const {
-  return this->is == other.is;
+  return is == other.is;
 }
 
 const string& line_iterator::dereference() const {
@@ -26,9 +31,20 @@ line_iterator::line_iterator(istream* is) : is(is) {
 }
 
 
+/*******************************************************************************
+ * file_line_iterator
+ */
+
 void file_line_iterator::make_line_iterator() {
-  new (&is) ifstream((*di)->path().native().c_str());
-  new (&li) line_iterator(&is);
+  if (is)
+    delete is;
+
+  is = new ifstream((*di)->path().native().c_str());
+
+  if (li)
+    delete li;
+
+  li = new line_iterator(is);
 }
 
 void file_line_iterator::advance_until_file_or_end(bool at_least_once) {
@@ -45,9 +61,9 @@ void file_line_iterator::advance_until_file_or_end(bool at_least_once) {
 void file_line_iterator::increment() {
   assert(di);
 
-  ++li;
+  ++(*li);
 
-  if (li == li_end) {
+  if ((*li) == li_end) {
     advance_until_file_or_end(true);
 
     if (di && (*di) != di_end)
@@ -56,17 +72,19 @@ void file_line_iterator::increment() {
 }
 
 bool file_line_iterator::equal(const file_line_iterator& other) const {
-  return this->di == other.di;
+  return di == other.di;
 }
 
 const string& file_line_iterator::dereference() const {
-  return *li;
+  return **li;
 }
 
-file_line_iterator::file_line_iterator() : di(NULL) {}
+file_line_iterator::file_line_iterator() : di(NULL), is(NULL), li(NULL) {}
 
 file_line_iterator::file_line_iterator(recursive_directory_iterator* di) :
     di(di),
+    is(NULL),
+    li(NULL),
     di_end(),
     li_end() {
 
@@ -74,4 +92,12 @@ file_line_iterator::file_line_iterator(recursive_directory_iterator* di) :
 
   if (di && (*di) != di_end)
     make_line_iterator();
+}
+
+file_line_iterator::~file_line_iterator() {
+  if (is)
+    delete is;
+
+  if (li)
+    delete li;
 }

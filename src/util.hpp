@@ -6,6 +6,11 @@
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/utility.hpp>
+
+/*******************************************************************************
+ * line_iterator
+ */
 
 class line_iterator :
   public boost::iterator_facade<
@@ -31,7 +36,12 @@ class line_iterator :
     explicit line_iterator(std::istream* is);
 };
 
+/*******************************************************************************
+ * file_line_iterator
+ */
+
 class file_line_iterator :
+  boost::noncopyable,
   public boost::iterator_facade<
     file_line_iterator,
     boost::filesystem::recursive_directory_iterator,
@@ -39,10 +49,10 @@ class file_line_iterator :
     std::string> {
 
   boost::filesystem::recursive_directory_iterator* di;
+  std::ifstream* is;
+  line_iterator* li;
   boost::filesystem::recursive_directory_iterator di_end;
   line_iterator li_end;
-  std::ifstream is;
-  line_iterator li;
 
   friend class boost::iterator_core_access;
 
@@ -61,6 +71,8 @@ class file_line_iterator :
 
     explicit file_line_iterator(
         boost::filesystem::recursive_directory_iterator* di);
+
+    ~file_line_iterator();
 };
 
 #endif
