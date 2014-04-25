@@ -1,6 +1,6 @@
 CS 388 Spring 2014 Final Project
 ===================
-## Parallel Viterbi
+## Parallel Viterbi [![Build Status](https://travis-ci.org/aaronj1335/cs388-final-project.svg?branch=master)](https://travis-ci.org/aaronj1335/cs388-final-project)
 
 > Aaron Stacy
 > 
