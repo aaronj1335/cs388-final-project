@@ -6,4 +6,6 @@ before_install:
   - ls -la /usr/local
   - ls -la /usr/local/lib
   - ls -la /usr/local/include
+  - ls -la /usr/lib
+  - ls -la /usr/include
 script: make test
