@@ -77,13 +77,13 @@ REPORT_SRC = report/report.md
 all: $(MAIN_TARGET) $(TEST_TARGET)
 
 $(MAIN_TARGET): $(MAIN_OBJECTS) | $(BIN_DIR)
-	$(CPP) $(FLAGS) $(LIBRARIES) -o $@ $(MAIN_OBJECTS)
+	$(CPP) $(FLAGS) -o $@ $(MAIN_OBJECTS) $(LIBRARIES)
 
 $(TEST_TARGET): $(TEST_OBJECTS) | $(BIN_DIR)
-	$(CPP) $(FLAGS) $(LIBRARIES) -o $@ $(TEST_OBJECTS)
+	$(CPP) $(FLAGS) -o $@ $(TEST_OBJECTS) $(LIBRARIES)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR)
-	$(CPP) $(FLAGS) $(LIBRARIES) -c -o $@ $<
+	$(CPP) $(FLAGS) -c -o $@ $< $(LIBRARIES)
 
 $(OBJ_DIR):
 	mkdir $(OBJ_DIR)
