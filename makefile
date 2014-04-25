@@ -36,7 +36,7 @@ ifndef TRAVIS
 	FLAGS += -Werror -Wno-unused-local-typedefs -Wno-return-local-addr
 endif
 
-LIBRARIES += -fopenmp -lboost_system -lboost_filesystem
+LIBRARIES += -fopenmp -lboost_filesystem -lboost_system
 
 SRC_DIR = src
 OBJ_DIR = obj
