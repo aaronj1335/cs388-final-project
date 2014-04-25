@@ -27,7 +27,7 @@ ifdef TRAVIS
 endif
 
 # don't error out on warnings in CI builds
-ifndef TRAVIS
+ifeq ($(CPP), g++-4.8)
 	# we need -Wno-unused-local-typedefs because of something included for
 	# boost ranges
 	#
