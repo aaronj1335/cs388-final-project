@@ -22,8 +22,12 @@ ifeq ($(DEBUG), 1)
 	FLAGS += -g
 endif
 
+ifdef TRAVIS
+	LIBRARIES += -L/usr/boost
+endif
+
 # don't error out on warnings in CI builds
-ifndef TRAVIS
+ifdef TRAVIS
 	# we need -Wno-unused-local-typedefs because of something included for
 	# boost ranges
 	#
