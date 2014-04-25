@@ -3,7 +3,7 @@
 
 #include <omp.h>
 
-#include "hmm.h"
+#include "hmm.hpp"
 
 #define DEBUG       0
 #define VERBOSE     0
