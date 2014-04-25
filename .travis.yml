@@ -8,4 +8,5 @@ before_install:
   - ls -la /usr/local/include
   - ls -la /usr/lib
   - ls -la /usr/include
+  - locate libboost_system.so
 script: make test
