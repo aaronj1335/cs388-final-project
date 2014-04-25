@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <getopt.h>
+#include <sys/time.h>
 
 #include <boost/filesystem.hpp>
 
@@ -148,14 +149,50 @@ int memoryLeakTest() {
   return 0;
 }
 
+int iteratorPerfTest() {
+  vector<double> times;
+
+  for (size_t i = 0; i <= 5; ++i) {
+    struct timeval wallClockStart, wallClockFinish;
+    double wallClockElapsed;
+    gettimeofday(&wallClockStart, NULL);
+
+    recursive_directory_iterator rdi("data");
+    file_line_iterator fli(&rdi);
+    tuple_iterator ti(&fli);
+
+    for (sentence_iterator si(&ti), end; si != end; ++si) {}
+
+    gettimeofday(&wallClockFinish, NULL);
+    wallClockElapsed =
+      ((wallClockFinish.tv_sec  - wallClockStart.tv_sec) * 1000000u +
+       wallClockFinish.tv_usec - wallClockStart.tv_usec) / 1.e6;
+
+    if (i != 0)
+      times.push_back(wallClockElapsed);
+  }
+
+  double total = 0;
+  for (vector<double>::iterator it = times.begin(); it != times.end(); ++it)
+    total += *it;
+
+  cout << (total / times.size()) << endl;
+
+  return 0;
+}
+
 int main(int argc, char* argv[]) {
   char opt;
   bool memoryLeakTestFlag = false;
+  bool iteratorPerfTestFlag = false;
 
-  while ((opt = getopt(argc, argv, "m")) != -1) {
+  while ((opt = getopt(argc, argv, "mp")) != -1) {
     switch (opt) {
       case 'm':
         memoryLeakTestFlag = true;
+        break;
+      case 'p':
+        iteratorPerfTestFlag = true;
         break;
       default: /* '?' */
         cerr << "USAGE: " << argv[0] << endl;
@@ -165,6 +202,9 @@ int main(int argc, char* argv[]) {
 
   if (memoryLeakTestFlag)
     return memoryLeakTest();
+
+  if (iteratorPerfTestFlag)
+    return iteratorPerfTest();
 
   run_tests();
 
