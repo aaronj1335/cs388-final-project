@@ -7,3 +7,4 @@ CS 388 Spring 2014 Final Project
 > Calvin MacKenzie
 
 [Project Proposal](proposal/proposal.pdf)
+
