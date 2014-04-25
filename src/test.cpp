@@ -136,16 +136,35 @@ void run_tests() {
   /* } */
 }
 
+int memoryLeakTest() {
+  while (true) {
+    recursive_directory_iterator rdi("data");
+    file_line_iterator fli(&rdi);
+    tuple_iterator ti(&fli);
+
+    for (sentence_iterator si(&ti), end; si != end; ++si) {}
+  }
+
+  return 0;
+}
+
 int main(int argc, char* argv[]) {
   char opt;
+  bool memoryLeakTestFlag = false;
 
-  while ((opt = getopt(argc, argv, "c")) != -1) {
+  while ((opt = getopt(argc, argv, "m")) != -1) {
     switch (opt) {
+      case 'm':
+        memoryLeakTestFlag = true;
+        break;
       default: /* '?' */
         cerr << "USAGE: " << argv[0] << endl;
         exit(EXIT_FAILURE);
     }
   }
+
+  if (memoryLeakTestFlag)
+    return memoryLeakTest();
 
   run_tests();
 
