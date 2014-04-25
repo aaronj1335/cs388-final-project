@@ -22,9 +22,8 @@ ifeq ($(DEBUG), 1)
 	FLAGS += -g
 endif
 
-# i think i can delete this
 ifdef TRAVIS
-	LIBRARIES += -L/usr/boost
+	LIBRARIES += -L/usr/lib
 endif
 
 # don't error out on warnings in CI builds
