@@ -4,4 +4,6 @@ before_install:
   - sudo apt-get install libboost-dev
   - dpkg -L libboost-dev
   - ls -la /usr/local
+  - ls -la /usr/local/lib
+  - ls -la /usr/local/include
 script: make test
