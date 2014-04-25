@@ -1,4 +1,7 @@
 language: cpp
 compiler: g++
-before_install: sudo apt-get install libboost-dev
+before_install:
+  - sudo apt-get install libboost-dev
+  - dpkg -L
+  - ls -la /usr/local
 script: make test
