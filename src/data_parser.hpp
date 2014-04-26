@@ -10,6 +10,16 @@
 #include <boost/filesystem.hpp>
 #include <boost/utility.hpp>
 
+/*******************************************************************************
+ * sentence
+ *
+ * a sentence is a vector of (word, part-of-speech) pairs
+ */
+
+typedef std::vector<std::pair<std::string, std::string> > sentence;
+
+
+#if 0
 
 /*******************************************************************************
  * line_iterator
@@ -120,15 +130,6 @@ class tuple_iterator :
 
 
 /*******************************************************************************
- * sentence
- *
- * a sentence is a vector of (word, part-of-speech) pairs
- */
-
-typedef std::vector<std::pair<std::string, std::string> > sentence;
-
-
-/*******************************************************************************
  * sentence_iterator
  */
 
@@ -161,5 +162,42 @@ class sentence_iterator :
 
     explicit sentence_iterator(tuple_iterator* fli);
 };
+
+#endif
+
+
+/*******************************************************************************
+ * formatted_sentence_iterator
+ */
+
+class formatted_sentence_iterator :
+    public std::iterator<std::input_iterator_tag, sentence> {
+
+  std::istream* is;
+  std::string line;
+  sentence s;
+
+  void advance();
+
+  void convert();
+
+  public:
+    formatted_sentence_iterator();
+
+    formatted_sentence_iterator(std::istream* is);
+
+    formatted_sentence_iterator& operator++();
+
+    formatted_sentence_iterator& operator++(int junk);
+
+    sentence operator*() const;
+
+    const sentence* operator->() const;
+
+    bool operator==(const formatted_sentence_iterator& rhs) const;
+
+    bool operator!=(const formatted_sentence_iterator& rhs) const;
+};
+
 
 #endif
