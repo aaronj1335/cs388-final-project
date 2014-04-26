@@ -16,12 +16,9 @@ int main() {
     string stag = string("<S>");
     string etag = string("<E>");
 
-    state start = {stag, stag};
-    state end = {etag, etag};
+    hmm *h = new hmm(stag, etag);
 
-    HMM *h = new HMM(start, end);
-
-    cout << h->tagVector.size() << endl;
+    cout << h->tag_vector.size() << endl;
     
     return 0;
 }
