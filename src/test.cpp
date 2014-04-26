@@ -188,6 +188,47 @@ void run_tests() {
 
     assert(close(m.forward(s), 0.03872));
   }
+
+  /*****************************************************************************
+   * hmm::forward second test
+   */
+  cout << "hmm::forward second test" << endl;
+
+  {
+    hmm m("s0", "sf");
+
+    // from here: http://www.cs.utexas.edu/~mooney/cs388/old-midterm.pdf
+    m.transitions["s0"] = map<string, double>();
+    m.transitions["s0"]["s1"] = 1.0;
+
+    m.transitions["s1"] = map<string, double>();
+    m.transitions["s1"]["s1"] = 0.7;
+    m.transitions["s1"]["sf"] = 0.3;
+
+    m.emissions["s1"] = map<string, double>();
+    m.emissions["s1"]["X"] = 0.9;
+    m.emissions["s1"]["Y"] = 0.1;
+
+    m.tag_vector.push_back("s1");
+    m.tag_vector.push_back("s2");
+
+    sentence s;
+    s.push_back(pair<string, string>("X", ""));
+
+    assert(close(m.forward(s), 0.27));
+
+    sentence s2;
+    s2.push_back(pair<string, string>("Y", ""));
+
+    assert(close(m.forward(s2), 0.03));
+
+    sentence s3;
+    s3.push_back(pair<string, string>("X", ""));
+    s3.push_back(pair<string, string>("X", ""));
+
+    assert(close(m.forward(s3), 0.1701));
+
+  }
 }
 
 int memoryLeakTest() {
