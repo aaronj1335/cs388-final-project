@@ -43,6 +43,7 @@ OBJ_DIR = obj
 SCRATCH ?= .
 VAR_DIR = $(SCRATCH)/var
 BIN_DIR = bin
+UTIL_DIR = util
 MAIN_TARGET = $(BIN_DIR)/$(MAIN_TARGET_BASE)
 TEST_TARGET = $(BIN_DIR)/$(TEST_TARGET_BASE)
 
@@ -52,6 +53,8 @@ OBJECTS = $(INPUTS_TMP:%.cpp=%.o)
 MAIN_OBJECTS = $(filter-out $(OBJ_DIR)/$(TEST_TARGET_BASE).o,$(OBJECTS))
 TEST_OBJECTS = $(filter-out $(OBJ_DIR)/$(MAIN_TARGET_BASE).o,$(OBJECTS))
 DEPFILES = $(OBJECTS:%.o=%.d)
+
+PREPROCESS_FILES = $(wildcard $(UTIL_DIR)/*.py)
 
 PERF_FILES = $(VAR_DIR)/1d.txt $(VAR_DIR)/4d.txt
 PERF_SUBDIR = default
@@ -116,6 +119,10 @@ $(VAR_DIR)/4d.txt: $(VAR_DIR)
 
 debug: all
 	lldb -- ./$(TEST_TARGET)
+
+# preprocessor
+pre:
+	@python $(PREPROCESS_FILES) data/penn-treebank-wsj $(OUT) $(NUM)
 
 # report
 

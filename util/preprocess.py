@@ -6,7 +6,7 @@ import os
 
 from multiprocessing import Pool
 
-def convert((file_name, output_dir)):
+def convert((file_name, output_dir), eos_tag="."):
     """Convert POS files to a format that can be easily parsed"""
 
     # place to save the newly converted file
@@ -15,8 +15,19 @@ def convert((file_name, output_dir)):
     # counter for number of lines output
     line_counter = 0
 
+    # list of special tags that mark the end of enclosed sentences
+    special_tags = [
+        "''", ")"
+    ]
+
     with open(output_file, "w") as fout:
         with open(file_name, "r") as fin:
+
+            # this is our line buffer which will contain a sentence
+            line_buffer = []
+
+            # this boolean should handle enclosed sentences
+            write_next = False
 
             # iterate over the lines in fin
             for line in fin:
@@ -24,9 +35,7 @@ def convert((file_name, output_dir)):
                 line = line.strip()
 
                 # skip blank lines and the line breaks
-                if line == "":
-                    continue
-                elif line.startswith("=") and line.endswith("="):
+                if line == "" or (line.startswith("=") and line.endswith("=")):
                     continue
 
                 # if the line is enclosed with brackets, split tokens
@@ -35,10 +44,48 @@ def convert((file_name, output_dir)):
                 else:
                     tokens = line
 
-                # otherwise, split and write tokens
+                # otherwise, split and append tokens
                 for token in tokens.split():
-                    line_counter+=1
-                    fout.write(token + "\n")
+
+                    if write_next:
+                        # check if this is a special tag            
+                        word, tag = tuple(token.rsplit("/", 1))
+                        # if this tag is special, add it to the buffer
+
+                        # did we append the token?
+                        append = False
+
+                        if tag in special_tags:
+                            line_buffer.append(token)
+                            append = True
+
+                        # write buffer to fout
+                        fout.write(" ".join(line_buffer) + "\n")
+                        line_counter+=1
+
+                        # clear the buffer
+                        line_buffer = []
+
+                        # if we did not append it, append it now
+                        if not append:
+                            line_buffer.append(token)
+
+                        # reset the boolean
+                        write_next = False
+                    else:
+                        line_buffer.append(token)
+                    
+                        # check if the tag is an end-of-sentence tag
+                        if token.endswith(eos_tag):
+                            word, tag = tuple(token.rsplit("/", 1))
+                            # confirming that the tag is correct
+                            if tag == eos_tag:
+                                # write to buffer on next token
+                                write_next = True             
+
+            # check the buffer before leaving the file
+            if line_buffer:
+                fout.write(" ".join(line_buffer) + "\n")
 
     # return number of lines written
     return (output_file, line_counter)
@@ -56,7 +103,7 @@ def partition(results, num_files):
     buckets = dict(map(lambda n: (n, []), range(num_files)))
 
     # fill buckets sequentially
-    current_total = 0
+    current_total = 0 
     index = 0
     for name, count in results:
         current_total += count
