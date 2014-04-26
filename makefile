@@ -1,7 +1,8 @@
 CPP = g++
-FLAGS = -Wall
+FLAGS = -Wall -Werror
 MAIN_TARGET_BASE = main
 TEST_TARGET_BASE = test
+LIBRARIES = -fopenmp
 
 # compiler dance:
 # - default to g++
@@ -10,33 +11,15 @@ CPP47 = $(shell which c++-4.7)
 CPP48 = $(shell which c++-4.8)
 ifneq ($(wildcard $(CPP47)),)
 	CPP = g++-4.7
-	LIBRARIES = -L$(HOME)/boost/lib -I$(HOME)/boost/include
 endif
 
 ifneq ($(wildcard $(CPP48)),)
 	CPP = g++-4.8
-	LIBRARIES = -L$(HOME)/boost/lib -I$(HOME)/boost/include
 endif
 
 ifeq ($(DEBUG), 1)
 	FLAGS += -g
 endif
-
-ifdef TRAVIS
-	LIBRARIES += -L/usr/lib
-endif
-
-# don't error out on warnings in CI builds
-ifeq ($(CPP), g++-4.8)
-	# we need -Wno-unused-local-typedefs because of something included for
-	# boost ranges
-	#
-	# we need -Wno-return-local-addr because file_line_iterator::dereference()
-	# returns a reference to a string. i haven't found a way around this.
-	FLAGS += -Werror -Wno-unused-local-typedefs -Wno-return-local-addr
-endif
-
-LIBRARIES += -fopenmp -lboost_filesystem -lboost_system
 
 SRC_DIR = src
 OBJ_DIR = obj
@@ -55,22 +38,6 @@ TEST_OBJECTS = $(filter-out $(OBJ_DIR)/$(MAIN_TARGET_BASE).o,$(OBJECTS))
 DEPFILES = $(OBJECTS:%.o=%.d)
 
 PREPROCESS_FILES = $(wildcard $(UTIL_DIR)/*.py)
-
-PERF_FILES = $(VAR_DIR)/1d.txt $(VAR_DIR)/4d.txt
-PERF_SUBDIR = default
-RESULTS_DIR = results/$(PERF_SUBDIR)
-
-ifeq ($(OMP_NUM_THREADS), 1)
-	PERF_SUBDIR = core
-endif
-
-ifeq ($(OMP_NUM_THREADS), 6)
-	PERF_SUBDIR = socket
-endif
-
-ifeq ($(OMP_NUM_THREADS), 12)
-	PERF_SUBDIR = node
-endif
 
 REPORT_HTML = report/report.html
 REPORT_SRC = report/report.md
