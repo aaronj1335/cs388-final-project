@@ -1,12 +1,2 @@
 language: cpp
-compiler: g++
-before_install:
-  - sudo apt-get install libboost-dev libboost-filesystem1.46-dev libboost-iostreams1.46-dev libboost-system1.46-dev
-  - dpkg -L libboost-dev
-  - ls -la /usr/local
-  - ls -la /usr/local/lib
-  - ls -la /usr/local/include
-  - ls -la /usr/lib
-  - ls -la /usr/include
-  - "locate libboost_system.so || true"
 script: make test
