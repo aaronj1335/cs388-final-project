@@ -6,27 +6,28 @@
 #include <map>
 #include <vector>
 
-// holds information for state
-struct state {
-    std::string word;
-    std::string tag;
-};
+#include "data_parser.hpp"
+
+typedef std::map<std::string, std::map<std::string, double> > emissions_t;
+typedef std::map<std::string, std::map<std::string, double> > transitions_t;
 
 // class structure for HMM
-class HMM {
-    private:
-        state start;
-        state end;
+class hmm {
+  private:
+    std::string start_tag;
+    std::string end_tag;
 
-    public:
-        HMM(state _start, state _end);
+  public:
+    hmm(std::string start_tag, std::string end_tag);
 
-        // state emitting tag
-        std::map<std::string, std::map<std::string, double> > emissions;
-        // state transitioning to state
-        std::map<std::string, std::map<std::string, double> > transitions;
-        // vector containing all possible tags
-        std::vector<std::string> tagVector;
+    double forward(const sentence& s);
+
+    // state emitting tag
+    emissions_t emissions;
+    // state transitioning to state
+    transitions_t transitions;
+    // vector containing all possible tags
+    std::vector<std::string> tag_vector;
 };
 
 #endif

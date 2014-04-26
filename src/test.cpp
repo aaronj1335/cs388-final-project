@@ -7,14 +7,23 @@
 #include <boost/filesystem.hpp>
 
 #include "data_parser.hpp"
+#include "hmm.hpp"
 
 using namespace std;
 using namespace boost::filesystem;
+
+template <typename T>
+bool close(T a, T b) {
+  T threshold = 0.0000001;
+
+  return a - b < threshold && b - a < threshold;
+}
 
 void run_tests() {
   /*****************************************************************************
    * line_iterator
    */
+  cout << "line_iterator" << endl;
 
   ifstream f3("test/simple/threelines.txt");
   ifstream f4("test/simple/fourlines.txt");
@@ -25,6 +34,7 @@ void run_tests() {
   /*****************************************************************************
    * file_line_iterator
    */
+  cout << "file_line_iterator" << endl;
 
   {
     recursive_directory_iterator rdi("test/simple");
@@ -64,6 +74,7 @@ void run_tests() {
   /*****************************************************************************
    * tuple_iterator
    */
+  cout << "tuple_iterator" << endl;
 
   {
     recursive_directory_iterator rdi("test/subset");
@@ -96,6 +107,7 @@ void run_tests() {
   /*****************************************************************************
    * sentence_iterator
    */
+  cout << "sentence_iterator" << endl;
 
   {
     recursive_directory_iterator rdi("test/subset");
@@ -135,6 +147,47 @@ void run_tests() {
   /*   cout << "end: " << result.back().back().first << endl; */
   /*   assert(result.back().back().first == "''"); */
   /* } */
+
+  /*****************************************************************************
+   * hmm::forward
+   */
+  cout << "hmm::forward" << endl;
+
+  {
+    hmm m("s0", "sf");
+
+    // from here: http://www.cs.utexas.edu/~mooney/cs388/old-midterm.pdf
+    m.transitions["s0"] = map<string, double>();
+    m.transitions["s0"]["s1"] = 0.2;
+    m.transitions["s0"]["s2"] = 0.8;
+
+    m.transitions["s1"] = map<string, double>();
+    m.transitions["s1"]["s1"] = 0.2;
+    m.transitions["s1"]["s2"] = 0.6;
+    m.transitions["s1"]["sf"] = 0.2;
+
+    m.transitions["s2"] = map<string, double>();
+    m.transitions["s2"]["s1"] = 0.2;
+    m.transitions["s2"]["s2"] = 0.6;
+    m.transitions["s2"]["sf"] = 0.2;
+
+    m.emissions["s1"] = map<string, double>();
+    m.emissions["s1"]["A"] = 0.6;
+    m.emissions["s1"]["B"] = 0.4;
+
+    m.emissions["s2"] = map<string, double>();
+    m.emissions["s2"]["A"] = 0.4;
+    m.emissions["s2"]["B"] = 0.6;
+
+    m.tag_vector.push_back("s1");
+    m.tag_vector.push_back("s2");
+
+    sentence s;
+    s.push_back(pair<string, string>("A", ""));
+    s.push_back(pair<string, string>("B", ""));
+
+    assert(close(m.forward(s), 0.03872));
+  }
 }
 
 int memoryLeakTest() {
