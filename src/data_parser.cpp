@@ -6,6 +6,7 @@
 using namespace std;
 using namespace boost::filesystem;
 
+#if 0
 
 /*******************************************************************************
  * line_iterator
@@ -296,4 +297,76 @@ sentence_iterator::sentence_iterator(tuple_iterator* ti) :
 
   if (ti && *ti != ti_end)
     advance();
+}
+
+#endif
+
+
+/*******************************************************************************
+ * formatted_sentence_iterator
+ */
+
+void formatted_sentence_iterator::advance() {
+  getline(*is, line);
+  convert();
+}
+
+void formatted_sentence_iterator::convert() {
+  istringstream iss(line);
+
+  s.clear();
+
+  for (istream_iterator<string> it(iss), end; it != end; ++it) {
+
+    string token = *it;
+    size_t idx = token.find_last_of('/');
+    string word = token.substr(0, idx);
+    string part_of_speech = token.substr(idx + 1, token.size());
+
+    s.push_back(pair<string, string>(word, part_of_speech));
+  }
+}
+
+formatted_sentence_iterator::formatted_sentence_iterator() : is(NULL) {}
+
+formatted_sentence_iterator::formatted_sentence_iterator(istream* is) :
+    is(is),
+    line() {
+
+  if (is && !is->eof())
+    advance();
+}
+
+formatted_sentence_iterator& formatted_sentence_iterator::operator++() {
+  assert(is && !is->eof());
+
+  if (is && !is->eof())
+    advance();
+
+  if (is->eof())
+    is = NULL;
+
+  return *this;
+}
+
+formatted_sentence_iterator& formatted_sentence_iterator::operator++(int junk) {
+  return (*this)++;
+}
+
+sentence formatted_sentence_iterator::operator*() const {
+  return s;
+}
+
+const sentence* formatted_sentence_iterator::operator->() const {
+  return &s;
+}
+
+bool formatted_sentence_iterator::operator==(
+    const formatted_sentence_iterator& rhs) const {
+  return is == rhs.is;
+}
+
+bool formatted_sentence_iterator::operator!=(
+    const formatted_sentence_iterator& rhs) const {
+  return is != rhs.is;
 }

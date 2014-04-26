@@ -1,5 +1,6 @@
 #include <fstream>
 
+#include <stdlib.h>
 #include <assert.h>
 #include <getopt.h>
 #include <sys/time.h>
@@ -20,6 +21,7 @@ bool close(T a, T b) {
 }
 
 void run_tests() {
+#if 0
   /*****************************************************************************
    * line_iterator
    */
@@ -148,6 +150,56 @@ void run_tests() {
   /*   assert(result.back().back().first == "''"); */
   /* } */
 
+
+#endif
+  /*****************************************************************************
+   * formatted_sentence_iterator
+   */
+
+  {
+    ifstream is("test/presubset/one.pos");
+    size_t dist = distance(formatted_sentence_iterator(&is),
+        formatted_sentence_iterator());
+
+    assert(dist == 10);
+  }
+
+  {
+    ifstream is("test/presubset/one.pos");
+    vector<sentence> sentences;
+
+    copy(formatted_sentence_iterator(&is), formatted_sentence_iterator(),
+        back_inserter(sentences));
+
+    assert(sentences.size() == 10);
+  }
+
+  {
+    ifstream is("data/converted/1/section_0.pos");
+
+    size_t count = 0;
+
+    for (formatted_sentence_iterator i(&is), end; i != end; ++i, ++count) {
+      if (count == 0) {
+        assert(i->front().first == "Pierre");
+        assert(i->back().second == ".");
+      } else if (count == 1) {
+        assert(i->front().first == "Mr.");
+        assert(i->back().second == ".");
+      } else {
+        // incur the cost of copying the string (we don't have that if we only
+        // use the -> operator)
+        sentence s = *i;
+
+        // prevent the compiler from complaining
+        s.front();
+      }
+    }
+
+    assert(count == 45920);
+  }
+
+
   /*****************************************************************************
    * hmm::forward
    */
@@ -222,17 +274,17 @@ void run_tests() {
     s3.push_back(pair<string, string>("X", ""));
 
     assert(close(m.forward(s3), 0.1701));
-
   }
 }
 
 int memoryLeakTest() {
   while (true) {
-    recursive_directory_iterator rdi("data");
-    file_line_iterator fli(&rdi);
-    tuple_iterator ti(&fli);
+    ifstream is("data/converted/1/section_0.pos");
 
-    for (sentence_iterator si(&ti), end; si != end; ++si) {}
+    for (formatted_sentence_iterator i(&is), end; i != end; ++i) {
+      sentence s = *i;
+      s.front();
+    }
   }
 
   return 0;
@@ -246,11 +298,9 @@ int iteratorPerfTest() {
     double wallClockElapsed;
     gettimeofday(&wallClockStart, NULL);
 
-    recursive_directory_iterator rdi("data");
-    file_line_iterator fli(&rdi);
-    tuple_iterator ti(&fli);
+    ifstream is("data/converted/1/section_0.pos");
 
-    for (sentence_iterator si(&ti), end; si != end; ++si) {}
+    for (formatted_sentence_iterator it(&is), end; it != end; ++it) {}
 
     gettimeofday(&wallClockFinish, NULL);
     wallClockElapsed =
