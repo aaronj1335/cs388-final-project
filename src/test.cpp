@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 
 #include <stdlib.h>
@@ -5,13 +6,10 @@
 #include <getopt.h>
 #include <sys/time.h>
 
-#include <boost/filesystem.hpp>
-
 #include "data_parser.hpp"
 #include "hmm.hpp"
 
 using namespace std;
-using namespace boost::filesystem;
 
 template <typename T>
 bool close(T a, T b) {
@@ -21,145 +19,14 @@ bool close(T a, T b) {
 }
 
 void run_tests() {
-#if 0
-  /*****************************************************************************
-   * line_iterator
-   */
-  cout << "line_iterator" << endl;
-
-  ifstream f3("test/simple/threelines.txt");
-  ifstream f4("test/simple/fourlines.txt");
-
-  assert(distance(line_iterator(&f3), line_iterator()) == 3);
-  assert(distance(line_iterator(&f4), line_iterator()) == 4);
-
-  /*****************************************************************************
-   * file_line_iterator
-   */
-  cout << "file_line_iterator" << endl;
-
-  {
-    recursive_directory_iterator rdi("test/simple");
-
-    size_t count = 0;
-    for (file_line_iterator it(&rdi), end; it != end; ++it)
-      count++;
-    assert(count == 7);
-  }
-
-  {
-    recursive_directory_iterator rdi("data");
-    size_t count = 0;
-    for (file_line_iterator it(&rdi), end; it != end; ++it)
-      count++;
-    assert(count == 688892);
-  }
-
-  {
-    vector<string> expected, actual;
-    expected.push_back("coffee");
-    expected.push_back("beer");
-    expected.push_back("whiskey");
-    expected.push_back("purple drank");
-    expected.push_back("foo");
-    expected.push_back("bar");
-    expected.push_back("baz");
-
-    recursive_directory_iterator rdi("test/simple");
-
-    for (file_line_iterator it(&rdi), end; it != end; ++it)
-      actual.push_back(*it);
-
-    assert(expected == actual);
-  }
-
-  /*****************************************************************************
-   * tuple_iterator
-   */
-  cout << "tuple_iterator" << endl;
-
-  {
-    recursive_directory_iterator rdi("test/subset");
-    file_line_iterator fli(&rdi);
-
-    size_t count = 0;
-    for (tuple_iterator ti(&fli), end; ti != end; ++ti)
-      count++;
-    assert(count == 783);
-  }
-
-  {
-    recursive_directory_iterator rdi("test/subset");
-    file_line_iterator fli(&rdi);
-    vector<string> tuples;
-
-    for (tuple_iterator ti(&fli), end; ti != end; ++ti)
-      tuples.push_back(*ti);
-
-    assert(tuples[0] == "Pierre/NNP");
-    assert(tuples[1] == "Vinken/NNP");
-    assert(tuples[2] == ",/,");
-    assert(tuples[3] == "61/CD");
-    assert(tuples[4] == "years/NNS");
-    assert(tuples[780] == "today/NN");
-    assert(tuples[781] == "./.");
-    assert(tuples[782] == "''/''");
-  }
-
   /*****************************************************************************
    * sentence_iterator
    */
   cout << "sentence_iterator" << endl;
 
   {
-    recursive_directory_iterator rdi("test/subset");
-    file_line_iterator fli(&rdi);
-    tuple_iterator ti(&fli);
-
-    size_t count = 0;
-    for (sentence_iterator si(&ti), end; si != end; ++si)
-      count++;
-    assert(count == 33);
-  }
-
-  {
-    recursive_directory_iterator rdi("data");
-    file_line_iterator fli(&rdi);
-    tuple_iterator ti(&fli);
-
-    size_t count = 0;
-    for (sentence_iterator si(&ti), end; si != end; ++si)
-      count++;
-
-    assert(count == 45280);
-  }
-
-  // this test fails because we're not handling the case where closing quotes
-  // come after a period. woldn't be too hard, but i don't know if it's worth
-  // it.
-  /* { */
-  /*   recursive_directory_iterator rdi("data"); */
-  /*   file_line_iterator fli(&rdi); */
-  /*   tuple_iterator ti(&fli); */
-  /*   vector<sentence> result; */
-
-  /*   for (sentence_iterator si(&ti), end; si != end; ++si) */
-  /*     result.push_back(*si); */
-
-  /*   cout << "end: " << result.back().back().first << endl; */
-  /*   assert(result.back().back().first == "''"); */
-  /* } */
-
-
-#endif
-  /*****************************************************************************
-   * formatted_sentence_iterator
-   */
-
-  {
     ifstream is("test/presubset/one.pos");
-    size_t dist = distance(formatted_sentence_iterator(&is),
-        formatted_sentence_iterator());
+    size_t dist = distance(sentence_iterator(&is), sentence_iterator());
 
     assert(dist == 10);
   }
@@ -168,8 +35,7 @@ void run_tests() {
     ifstream is("test/presubset/one.pos");
     vector<sentence> sentences;
 
-    copy(formatted_sentence_iterator(&is), formatted_sentence_iterator(),
-        back_inserter(sentences));
+    copy(sentence_iterator(&is), sentence_iterator(), back_inserter(sentences));
 
     assert(sentences.size() == 10);
   }
@@ -179,20 +45,13 @@ void run_tests() {
 
     size_t count = 0;
 
-    for (formatted_sentence_iterator i(&is), end; i != end; ++i, ++count) {
+    for (sentence_iterator i(&is), end; i != end; ++i, ++count) {
       if (count == 0) {
         assert(i->front().first == "Pierre");
         assert(i->back().second == ".");
       } else if (count == 1) {
         assert(i->front().first == "Mr.");
         assert(i->back().second == ".");
-      } else {
-        // incur the cost of copying the string (we don't have that if we only
-        // use the -> operator)
-        sentence s = *i;
-
-        // prevent the compiler from complaining
-        s.front();
       }
     }
 
@@ -281,7 +140,7 @@ int memoryLeakTest() {
   while (true) {
     ifstream is("data/converted/1/section_0.pos");
 
-    for (formatted_sentence_iterator i(&is), end; i != end; ++i) {
+    for (sentence_iterator i(&is), end; i != end; ++i) {
       sentence s = *i;
       s.front();
     }
@@ -300,7 +159,7 @@ int iteratorPerfTest() {
 
     ifstream is("data/converted/1/section_0.pos");
 
-    for (formatted_sentence_iterator it(&is), end; it != end; ++it) {}
+    for (sentence_iterator it(&is), end; it != end; ++it) {}
 
     gettimeofday(&wallClockFinish, NULL);
     wallClockElapsed =
