@@ -189,11 +189,6 @@ void run_tests() {
     assert(close(m.forward(s), 0.03872));
   }
 
-  /*****************************************************************************
-   * hmm::forward second test
-   */
-  cout << "hmm::forward second test" << endl;
-
   {
     hmm m("s0", "sf");
 
