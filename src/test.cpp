@@ -103,7 +103,6 @@ void run_tests() {
   {
     hmm m("s0", "sf");
 
-    // from here: http://www.cs.utexas.edu/~mooney/cs388/old-midterm.pdf
     m.transitions["s0"] = map<string, double>();
     m.transitions["s0"]["s1"] = 1.0;
 
@@ -116,7 +115,6 @@ void run_tests() {
     m.emissions["s1"]["Y"] = 0.1;
 
     m.tag_vector.push_back("s1");
-    m.tag_vector.push_back("s2");
 
     sentence s;
     s.push_back(pair<string, string>("X", ""));
