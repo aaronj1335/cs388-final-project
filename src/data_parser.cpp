@@ -46,13 +46,14 @@ sentence_iterator::sentence_iterator(istream* is) :
 
   if (is && !is->eof())
     advance();
+  else
+    is = NULL;
 }
 
 sentence_iterator& sentence_iterator::operator++() {
   assert(is && !is->eof());
 
-  if (is && !is->eof())
-    advance();
+  advance();
 
   if (is->eof())
     is = NULL;
