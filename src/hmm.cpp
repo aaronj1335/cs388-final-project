@@ -4,9 +4,44 @@
 
 using namespace std;
 
+
+/*******************************************************************************
+ * hmm
+ */
+
+void hmm::make_random_model(sentence_iterator& it) {
+  map<string, double> vocab;
+  map<string, double> tags;
+
+  for (sentence_iterator end; it != end; ++it) {
+    for (size_t i = 0; i < it->size(); ++i) {
+      vocab[it->at(i).first] = ((double) rand()) / ((double)RAND_MAX);
+      tags[it->at(i).second] = ((double) rand()) / ((double)RAND_MAX);
+    }
+  }
+
+  tags[end_tag] = ((double) rand()) / ((double)RAND_MAX);
+
+  for (map<string, double>::iterator it = tags.begin();
+      it != tags.end();
+      ++it) {
+    emissions[it->first] = vocab;
+    transitions[it->first] = tags;
+    tag_vector.push_back(it->first);
+  }
+
+  transitions[start_tag] = tags;
+  transitions[end_tag] = tags;
+}
+
 hmm::hmm(string start_tag, string end_tag) :
   start_tag(start_tag),
   end_tag(end_tag) {}
+
+hmm::hmm(string start_tag, string end_tag, sentence_iterator& it) {
+  hmm(start_tag, end_tag);
+  make_random_model(it);
+}
 
 // kinda based on https://gist.github.com/aaronj1335/9650261
 double hmm::forward(const sentence& s) {

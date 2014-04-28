@@ -13,12 +13,16 @@ using namespace std;
 
 template <typename T>
 bool close(T a, T b) {
-  T threshold = 0.0000001;
+  T threshold = (a + b) / 2 * 0.0001;
 
   return a - b < threshold && b - a < threshold;
 }
 
 void run_tests() {
+
+  // deterministic random numbers for reproducibility
+  srand(0);
+
   /*****************************************************************************
    * sentence_iterator
    */
@@ -133,6 +137,45 @@ void run_tests() {
     s3.push_back(pair<string, string>("X", ""));
 
     assert(close(m.forward(s3), 0.1701));
+  }
+
+
+  /*****************************************************************************
+   * hmm::make_random_model
+   */
+  cout << "hmm::make_random_model" << endl;
+
+  {
+    ifstream is("test/presubset/one.pos");
+    sentence_iterator si(&is);
+    hmm m("<start>", "<end>", si);
+
+    ifstream is2("test/presubset/one.pos");
+    sentence_iterator si2(&is2);
+    double total_probability = 1.0;
+
+    for (sentence_iterator end; si2 != end; ++si2)
+      total_probability *= m.forward(*si2);
+
+    cout << "total_probability: " << total_probability << endl;
+    assert(close(total_probability, 1.22576e+184));
+  }
+
+  {
+    ifstream is("data/converted/1/section_0.pos");
+    sentence_iterator si(&is);
+    hmm m("<start>", "<end>", si);
+
+    /* ifstream is2("data/converted/1/section_0.pos"); */
+    // it takes too long if we run the test on the full dataset
+    ifstream is2("test/presubset/one.pos");
+    sentence_iterator si2(&is2);
+    double total_probability = 1.0;
+
+    for (sentence_iterator end; si2 != end; ++si2)
+      total_probability *= m.forward(*si2);
+
+    assert(close(total_probability, 2.79275e+254));
   }
 }
 
