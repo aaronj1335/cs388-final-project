@@ -42,6 +42,7 @@ PREPROCESS_FILES = $(wildcard $(UTIL_DIR)/*.py)
 REPORT_HTML = report/report.html
 REPORT_SRC = report/report.md
 
+
 # main application
 
 all: $(MAIN_TARGET) $(TEST_TARGET)
@@ -72,6 +73,7 @@ deps: $(DEPFILES)
 
 # running, testing, etc
 
+test: FLAGS += -g -DTEST=1
 test: $(TEST_TARGET)
 	@$(TEST_TARGET)
 

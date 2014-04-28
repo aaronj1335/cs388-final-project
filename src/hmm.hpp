@@ -6,19 +6,44 @@
 #include <map>
 #include <vector>
 
+#include <stdlib.h>
+
 #include "data_parser.hpp"
 
+
+/*******************************************************************************
+ * emissions_t
+ *
+ * probabilities of seeing any vocab words from the set of states
+ */
+
 typedef std::map<std::string, std::map<std::string, double> > emissions_t;
+
+
+/*******************************************************************************
+ * transitions_t
+ *
+ * probabilities of transitioning from any state to any other state
+ */
+
 typedef std::map<std::string, std::map<std::string, double> > transitions_t;
 
-// class structure for HMM
+
+/*******************************************************************************
+ * hmm
+ */
+
 class hmm {
   private:
     std::string start_tag;
     std::string end_tag;
 
+    void make_random_model(sentence_iterator& it);
+
   public:
     hmm(std::string start_tag, std::string end_tag);
+
+    hmm(std::string start_tag, std::string end_tag, sentence_iterator& it);
 
     double forward(const sentence& s);
 
