@@ -5,6 +5,14 @@
 using namespace std;
 
 
+ostream& operator<<(ostream& os, const sentence& s) {
+  for (sentence::const_iterator it = s.begin(); it != s.end(); ++it)
+    os << it->first << "/" << it->second << " ";
+
+  return os;
+}
+
+
 /*******************************************************************************
  * sentence_iterator
  */

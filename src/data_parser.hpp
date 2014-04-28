@@ -15,6 +15,8 @@
 
 typedef std::vector<std::pair<std::string, std::string> > sentence;
 
+std::ostream& operator<<(std::ostream& os, const sentence& s);
+
 
 /*******************************************************************************
  * sentence_iterator
