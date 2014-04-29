@@ -75,6 +75,9 @@ deps: $(DEPFILES)
 test: $(TEST_TARGET)
 	@$(TEST_TARGET)
 
+run: $(MAIN_TARGET)
+	@$(MAIN_TARGET) $(ARGS)
+
 $(VAR_DIR):
 	mkdir $@
 
