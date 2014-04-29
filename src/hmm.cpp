@@ -5,6 +5,15 @@
 using namespace std;
 
 
+double testable_rand() {
+#if TEST
+  return 0.1;
+#else
+  return ((double) rand()) / ((double)RAND_MAX);
+#endif
+}
+
+
 /*******************************************************************************
  * hmm
  */
@@ -15,12 +24,12 @@ void hmm::make_random_model(sentence_iterator& it) {
 
   for (sentence_iterator end; it != end; ++it) {
     for (size_t i = 0; i < it->size(); ++i) {
-      vocab[it->at(i).first] = ((double) rand()) / ((double)RAND_MAX);
-      tags[it->at(i).second] = ((double) rand()) / ((double)RAND_MAX);
+      vocab[it->at(i).first] = testable_rand();
+      tags[it->at(i).second] = testable_rand();
     }
   }
 
-  tags[end_tag] = ((double) rand()) / ((double)RAND_MAX);
+  tags[end_tag] = testable_rand();
 
   for (map<string, double>::iterator it = tags.begin();
       it != tags.end();

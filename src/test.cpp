@@ -18,15 +18,7 @@ bool close(T a, T b) {
   return a - b < threshold && b - a < threshold;
 }
 
-// overwrite rand for testing
-int rand() {
-  return RAND_MAX / 10;
-}
-
 void run_tests() {
-
-  // deterministic random numbers for reproducibility
-  srand(0);
 
   /*****************************************************************************
    * sentence_iterator
@@ -67,17 +59,6 @@ void run_tests() {
     assert(count == 45920);
   }
 
-  /*****************************************************************************
-   * rand
-   */
-   cout << "rand" << endl;
-
-   {
-    // ensure we are using the in-house rand
-    for (int i = 0; i < 100; i++) {
-      assert(rand() == RAND_MAX / 10);
-    } 
-   }
 
   /*****************************************************************************
    * hmm::forward
@@ -173,8 +154,7 @@ void run_tests() {
     for (sentence_iterator end; si2 != end; ++si2)
       total_probability *= m.forward(*si2);
 
-    cout << "total_probability: " << total_probability << endl;
-    assert(close(total_probability, 3.77703e-131));
+    assert(close(total_probability, 3.77704e-131));
   }
 
   {
@@ -191,7 +171,6 @@ void run_tests() {
     for (sentence_iterator end; si2 != end; ++si2)
       total_probability *= m.forward(*si2);
 
-    cout << "total_probability: " << total_probability << endl;
     assert(close(total_probability, 3.16697e-31));
   }
 }
