@@ -2,7 +2,7 @@ CPP = g++
 FLAGS = -Wall -Werror
 MAIN_TARGET_BASE = main
 TEST_TARGET_BASE = test
-LIBRARIES = -fopenmp -std=c++11
+LIBRARIES = -fopenmp -std=c++0x
 
 # compiler dance:
 # - default to g++
