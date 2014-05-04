@@ -1,4 +1,6 @@
 #include <string>
+#include <iostream>
+#include <fstream>
 
 #include "hmm.hpp"
 
@@ -47,9 +49,19 @@ hmm::hmm(string start_tag, string end_tag) :
   start_tag(start_tag),
   end_tag(end_tag) {}
 
+
+
 hmm::hmm(string start_tag, string end_tag, sentence_iterator& it) {
   hmm(start_tag, end_tag);
   make_random_model(it);
+}
+
+hmm::hmm(string start_tag, string end_tag, char* file_name) {
+  ifstream is(file_name);
+  sentence_iterator si(&is);
+
+  hmm(start_tag, end_tag);
+  make_random_model(si);
 }
 
 // kinda based on https://gist.github.com/aaronj1335/9650261

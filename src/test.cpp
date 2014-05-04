@@ -156,9 +156,39 @@ void run_tests() {
   }
 
   {
+    char train[] = "test/presubset/one.pos";
+    hmm m("<start>", "<end>", train);
+
+    ifstream is2("test/presubset/one.pos");
+    sentence_iterator si2(&is2);
+    double total_probability = 1.0;
+
+    for (sentence_iterator end; si2 != end; ++si2)
+      total_probability *= m.forward(*si2);
+
+    assert(close(total_probability, 3.77704e-131));
+  }
+
+  {
     ifstream is("data/converted/1/section_0.pos");
     sentence_iterator si(&is);
     hmm m("<start>", "<end>", si);
+
+    /* ifstream is2("data/converted/1/section_0.pos"); */
+    // it takes too long if we run the test on the full dataset
+    ifstream is2("test/presubset/one.pos");
+    sentence_iterator si2(&is2);
+    double total_probability = 1.0;
+
+    for (sentence_iterator end; si2 != end; ++si2)
+      total_probability *= m.forward(*si2);
+
+    assert(close(total_probability, 3.16697e-31));
+  }
+
+  {
+    char train[] = "data/converted/1/section_0.pos";
+    hmm m("<start>", "<end>", train);
 
     /* ifstream is2("data/converted/1/section_0.pos"); */
     // it takes too long if we run the test on the full dataset

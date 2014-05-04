@@ -45,6 +45,8 @@ class hmm {
 
     hmm(std::string start_tag, std::string end_tag, sentence_iterator& it);
 
+    hmm(std::string start_tag, std::string end_tag, char* file_name);
+
     double forward(const sentence& s);
 
     // state emitting tag
