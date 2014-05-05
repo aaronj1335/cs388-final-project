@@ -67,14 +67,13 @@ int main(int argc, char* argv[]) {
   int runs = 3;
 
   float total_time = 0;
+  hmm m("<start>", "<end>", train);
 
-  // warm up the cache
-  time_function(train, test, level_one_threads, level_two_threads);
+  // warm up file system cache
+  time_function(m, test, level_one_threads, level_two_threads);
 
-  for (int i = 0; i < runs; i++) {
-    total_time += time_function(train, test, level_one_threads,
-        level_two_threads);
-  }
+  for (int i = 0; i < runs; i++)
+    total_time += time_function(m, test, level_one_threads, level_two_threads);
 
   if (perf_time_fname) {
     cerr << "writing time to '" << perf_time_fname << "': " <<

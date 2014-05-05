@@ -7,10 +7,8 @@ using namespace std;
  *
  * times the running time of a function in seconds
  */
-double time_function(char* train, char* test, size_t level_one_threads,
+double time_function(hmm& m, char* test, size_t level_one_threads,
     size_t level_two_threads) {
-
-  hmm m("<start>", "<end>", train);
 
   struct timeval wall_clock_start, wall_clock_finished;
   double wall_clock_elapsed;
