@@ -1,6 +1,8 @@
 #include <iostream>
 
+#include <stdlib.h>
 #include <omp.h>
+#include <getopt.h>
 
 #include "hmm.hpp"
 #include "timer.hpp"
@@ -22,25 +24,34 @@ int main(int argc, char* argv[]) {
   int level_one_threads = -1;
   int level_two_threads = -1;
   
-  // get arguments for training and testing set
-  if (argc == 3) {
-    // we are not using parallel
-    train = argv[1];
-    test = argv[2];
-  } else if (argc == 5) {
-    // we are parallel
-    is_parallel = true;
-    train = argv[1];
-    test = argv[2];
-    level_one_threads = atoi(argv[3]);
-    level_two_threads = atoi(argv[4]);
-  } else {
-    // not enough arguments, exit
-    cout << "Parallel" << endl;
-    cout << "   Usage: main [train] [test] [level_one_threads] [level_two_threads]" << endl;
-    cout << "\nSequential" << endl;
-    cout << "   Usage: main [train] [test]" << endl;
+  char opt;
+  while ((opt = getopt(argc, argv, "r:t:n:m:")) != -1) {
+    switch (opt) {
+      case 'r':
+        train = optarg;
+        break;
+      case 't':
+        test = optarg;
+        break;
+      case 'n':
+        level_one_threads = atoi(optarg);
+        is_parallel = true;
+        break;
+      case 'm':
+        level_two_threads = atoi(optarg);
+        is_parallel = true;
+        break;
+      default:
+        break;
+    }
+  }
 
+  if (train == NULL || test == NULL) {
+    cerr << "Usage: " << argv[0];
+    cerr << " -r train_file -t test_file";
+    cerr << " [-n level_one_threads -m level_two_threads]";
+    cerr << endl;
+    
     return 1;
   }
 
