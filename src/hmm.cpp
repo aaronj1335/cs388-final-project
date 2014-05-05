@@ -102,3 +102,39 @@ double hmm::forward(const sentence& s) {
 
   return probability;
 }
+
+double hmm::parallel_forward(const sentence& s) {
+  vector<vector<double> > lattice(s.size());
+  size_t num_pos = tag_vector.size();
+
+  #pragma omp parallel for
+    for (size_t i = 0; i < s.size(); ++i) {
+      lattice[i] = vector<double>();
+      for (size_t j = 0; j < num_pos; ++j)
+        lattice[i].push_back(0);
+    }
+
+  size_t t = 0;
+  for (; t < s.size(); ++t) {
+
+    #pragma omp parallel for
+      for (size_t st = 0; st < num_pos; ++st) {
+        if (t == 0)
+          // should this go in the initialization loop?
+          lattice[t][st] = transitions[start_tag][tag_vector[st]];
+        else
+          for (size_t o = 0; o < num_pos; ++o)
+            lattice[t][st] +=
+              lattice[t - 1][o] * transitions[tag_vector[o]][tag_vector[st]];
+
+        lattice[t][st] *= emissions[tag_vector[st]][s[t].first];
+      }
+  }
+
+  double probability = 0;
+  for (size_t st = 0; st < num_pos; ++st)
+    probability +=
+      lattice[t - 1][st] * transitions[tag_vector[st]][end_tag];
+
+  return probability;
+}

@@ -49,6 +49,8 @@ class hmm {
 
     double forward(const sentence& s);
 
+    double parallel_forward(const sentence& s);
+
     // state emitting tag
     emissions_t emissions;
     // state transitioning to state

@@ -24,6 +24,52 @@ bool close(T a, T b) {
 void run_tests() {
 
   /*****************************************************************************
+   * omp_nested
+   */
+  cout << "omp_nested" << endl;
+
+  {
+    vector<int> outer, inner;
+    omp_set_nested(true);
+
+    assert(omp_get_nested());
+
+    omp_set_num_threads(2);
+    #pragma omp parallel
+    {
+      #pragma omp critical
+      {
+        outer.push_back(omp_get_thread_num());
+      }
+
+      omp_set_num_threads(3);
+      #pragma omp parallel
+      {
+        #pragma omp critical
+        {
+          inner.push_back(omp_get_thread_num());
+        }
+      }
+    }
+
+    sort(outer.begin(), outer.end());
+    sort(inner.begin(), inner.end());
+
+    assert(outer.size() == 2);
+    assert(outer[0] == 0);
+    assert(outer[1] == 1);
+
+    assert(inner.size() == 6);
+    assert(inner[0] == 0);
+    assert(inner[1] == 0);
+    assert(inner[2] == 1);
+    assert(inner[3] == 1);
+    assert(inner[4] == 2);
+    assert(inner[5] == 2);
+  }
+
+
+  /*****************************************************************************
    * sentence_iterator
    */
   cout << "sentence_iterator" << endl;
@@ -205,51 +251,51 @@ void run_tests() {
     assert(close(total_probability, 3.16697e-31));
   }
 
+
   /*****************************************************************************
-   * omp_nested
+   * hmm::parallel_forward
    */
-  cout << "omp_nested" << endl;
+  cout << "hmm::parallel_forward" << endl;
 
   {
-    vector<int> outer, inner;
-    omp_set_nested(true);
+    ifstream is("test/presubset/one.pos");
+    sentence_iterator si(&is);
+    hmm m("<start>", "<end>", si);
 
-    assert(omp_get_nested());
+    ifstream is2("test/presubset/one.pos");
+    sentence_iterator si2(&is2);
 
-    omp_set_num_threads(2);
-    #pragma omp parallel
-    {
-      #pragma omp critical
-      {
-        outer.push_back(omp_get_thread_num());
-      }
+    double total_probability = 1;
+    for (sentence_iterator end; si2 != end; ++si2)
+      total_probability *= m.parallel_forward(*si2);
 
-      omp_set_num_threads(3);
-      #pragma omp parallel
-      {
-        #pragma omp critical
-        {
-          inner.push_back(omp_get_thread_num());
-        }
-      }
-    }
-
-    sort(outer.begin(), outer.end());
-    sort(inner.begin(), inner.end());
-
-    assert(outer.size() == 2);
-    assert(outer[0] == 0);
-    assert(outer[1] == 1);
-
-    assert(inner.size() == 6);
-    assert(inner[0] == 0);
-    assert(inner[1] == 0);
-    assert(inner[2] == 1);
-    assert(inner[3] == 1);
-    assert(inner[4] == 2);
-    assert(inner[5] == 2);
+    assert(close(total_probability, 3.77704e-131));
   }
 
+  {
+    ifstream is("test/presubset/one.pos");
+    sentence_iterator si(&is);
+    hmm m("<start>", "<end>", si);
+
+    ifstream is2("test/presubset/first_half.pos");
+    ifstream is3("test/presubset/second_half.pos");
+    vector<sentence_iterator*> sis;
+    sis.push_back(new sentence_iterator(&is2));
+    sis.push_back(new sentence_iterator(&is3));
+
+    double total_probability = 1;
+    omp_set_num_threads(2);
+    #pragma omp parallel reduction(*:total_probability)
+    {
+      size_t i = omp_get_thread_num();
+      sentence_iterator* si = sis[i];
+
+      for (sentence_iterator end; *si != end; ++(*si))
+        total_probability *= m.parallel_forward(**si);
+    }
+
+    assert(close(total_probability, 3.77704e-131));
+  }
 }
 
 int memoryLeakTest() {
