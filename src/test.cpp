@@ -1,10 +1,13 @@
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 
 #include <stdlib.h>
 #include <assert.h>
 #include <getopt.h>
 #include <sys/time.h>
+
+#include <omp.h>
 
 #include "data_parser.hpp"
 #include "hmm.hpp"
@@ -201,6 +204,52 @@ void run_tests() {
 
     assert(close(total_probability, 3.16697e-31));
   }
+
+  /*****************************************************************************
+   * omp_nested
+   */
+  cout << "omp_nested" << endl;
+
+  {
+    vector<int> outer, inner;
+    omp_set_nested(true);
+
+    assert(omp_get_nested());
+
+    omp_set_num_threads(2);
+    #pragma omp parallel
+    {
+      #pragma omp critical
+      {
+        outer.push_back(omp_get_thread_num());
+      }
+
+      omp_set_num_threads(3);
+      #pragma omp parallel
+      {
+        #pragma omp critical
+        {
+          inner.push_back(omp_get_thread_num());
+        }
+      }
+    }
+
+    sort(outer.begin(), outer.end());
+    sort(inner.begin(), inner.end());
+
+    assert(outer.size() == 2);
+    assert(outer[0] == 0);
+    assert(outer[1] == 1);
+
+    assert(inner.size() == 6);
+    assert(inner[0] == 0);
+    assert(inner[1] == 0);
+    assert(inner[2] == 1);
+    assert(inner[3] == 1);
+    assert(inner[4] == 2);
+    assert(inner[5] == 2);
+  }
+
 }
 
 int memoryLeakTest() {
