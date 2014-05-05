@@ -16,7 +16,7 @@
  *
  * times the running time of a function in seconds
  */
-double time_function(char* train, char* test, size_t level_one_threads,
+double time_function(hmm& m, char* test, size_t level_one_threads,
     size_t level_two_threads);
 
 /*******************************************************************************

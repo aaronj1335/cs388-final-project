@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-n=400
+n=256
 level_1_threads="1 2 4"
 level_2_threads="1 2 4"
 
