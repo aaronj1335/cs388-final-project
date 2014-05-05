@@ -7,16 +7,26 @@ using namespace std;
  *
  * times the running time of a function in seconds
  */
-double time_function(void (*function)(char *, char *), char* train, char* test) {
+double time_function(char* train, char* test, size_t level_one_threads,
+    size_t level_two_threads) {
 
-  // begin clock
-  clock_t start = clock();
+  hmm m("<start>", "<end>", train);
 
-  // call the function
-  function(train, test);
+  struct timeval wall_clock_start, wall_clock_finished;
+  double wall_clock_elapsed;
+  gettimeofday(&wall_clock_start, NULL);
+
+  omp_set_num_threads(level_one_threads);
+
+  perform_run(m, test, level_two_threads);
+
+  gettimeofday(&wall_clock_finished, NULL);
+  wall_clock_elapsed =
+    ((wall_clock_finished.tv_sec  - wall_clock_start.tv_sec) * 1000000u +
+     wall_clock_finished.tv_usec - wall_clock_start.tv_usec) / 1.e6;
 
   // return time in seconds
-  return (clock() - start) / (double) CLOCKS_PER_SEC;
+  return wall_clock_elapsed;
 }
 
 /*******************************************************************************
@@ -24,14 +34,24 @@ double time_function(void (*function)(char *, char *), char* train, char* test) 
  *
  * run the forward algorithm using the train and sets
  */
-void perform_run(char* train, char* test) {
-
-  hmm m("<start>", "<end>", train);
-
-  ifstream is2(test);
-  sentence_iterator si2(&is2);
-  
+void perform_run(hmm& m, char* test, size_t threads) {
   double total_probability = 1.0;
-  for (sentence_iterator end; si2 != end; ++si2)
-    total_probability *= m.forward(*si2);
+
+  #pragma omp parallel
+  {
+    int tid = omp_get_thread_num();
+    char tid_str[64];
+    sprintf(tid_str, "%d", tid);
+    ifstream is(string(test) + "/" + "section_" + tid_str + ".pos");
+    sentence_iterator si(&is);
+    double local_total_probability = 1.0;
+
+    omp_set_num_threads(threads);
+
+    for (sentence_iterator end; si != end; ++si)
+      local_total_probability *= m.parallel_forward(*si);
+
+    #pragma omp atomic
+      total_probability *= local_total_probability;
+  }
 }
