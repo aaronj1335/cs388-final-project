@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+n=400
+level_1_threads="1 2 4"
+level_2_threads="1 2 4"
+
+[ -d results ] || mkdir results
+
+rm -f results/*
+
+for i in $level_1_threads; do
+  bin/maketestdata.py -l $n -n $i
+done
+
+for d in data/convertedsubset/*; do
+  for t in $level_2_threads; do
+    l1t=
+    bin/main \
+      -r data/converted/1/section_0.pos \
+      -t $d \
+      -n `basename $d` \
+      -m $t \
+      -p results/${n}_`basename $d`_${t}.txt
+  done
+done

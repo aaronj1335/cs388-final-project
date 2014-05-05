@@ -42,7 +42,7 @@ void perform_run(hmm& m, char* test, size_t threads) {
     int tid = omp_get_thread_num();
     char tid_str[64];
     sprintf(tid_str, "%d", tid);
-    ifstream is(string(test) + "/" + "section_" + tid_str + ".pos");
+    ifstream is((string(test) + "/" + "section_" + tid_str + ".pos").c_str());
     sentence_iterator si(&is);
     double local_total_probability = 1.0;
 

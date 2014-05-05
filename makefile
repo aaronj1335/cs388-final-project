@@ -92,9 +92,16 @@ $(VAR_DIR)/4d.txt: $(VAR_DIR)
 debug: all
 	lldb -- ./$(TEST_TARGET)
 
+
+# perf
+perf: all
+	@bin/perf
+
+
 # preprocessor
 pre:
 	@python $(PREPROCESS_FILES) data/penn-treebank-wsj $(OUT) $(NUM)
+
 
 # report
 

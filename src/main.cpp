@@ -13,19 +13,28 @@
 
 using namespace std;
 
+void usage(const char *const argv0, int exit_val) {
+  cerr << "Usage: " << argv0;
+  cerr << " -r train_file -t test_file";
+  cerr << " [-n level_one_threads -m level_two_threads -p perf_time_file]";
+  cerr << " [-h]";
+  cerr << endl;
+  exit(exit_val);
+}
+
 int main(int argc, char* argv[]) {
 
   // datasets to use
   char* train = NULL;
   char* test = NULL;
+  char* perf_time_fname = NULL;
 
   // variables for parallelization
-  bool is_parallel = false;
-  int level_one_threads = -1;
-  int level_two_threads = -1;
+  int level_one_threads = 1;
+  int level_two_threads = 1;
 
   char opt;
-  while ((opt = getopt(argc, argv, "r:t:n:m:")) != -1) {
+  while ((opt = getopt(argc, argv, "hr:t:n:m:p:")) != -1) {
     switch (opt) {
       case 'r':
         train = optarg;
@@ -35,41 +44,45 @@ int main(int argc, char* argv[]) {
         break;
       case 'n':
         level_one_threads = atoi(optarg);
-        is_parallel = true;
         break;
       case 'm':
         level_two_threads = atoi(optarg);
-        is_parallel = true;
+        break;
+      case 'p':
+        perf_time_fname = optarg;
+        break;
+      case 'h':
+        usage(argv[0], 0);
         break;
       default:
+        usage(argv[0], EXIT_FAILURE);
         break;
     }
   }
 
-  if (train == NULL || test == NULL) {
-    cerr << "Usage: " << argv[0];
-    cerr << " -r train_file -t test_file";
-    cerr << " [-n level_one_threads -m level_two_threads]";
-    cerr << endl;
-
-    return 1;
-  }
+  if (train == NULL || test == NULL)
+    usage(argv[0], EXIT_FAILURE);
 
   // average over several runs
-  int runs = 1;
+  int runs = 3;
 
   float total_time = 0;
 
   // warm up the cache
-  /* time_function(train, test, level_one_threads, level_two_threads); */
+  time_function(train, test, level_one_threads, level_two_threads);
 
   for (int i = 0; i < runs; i++) {
     total_time += time_function(train, test, level_one_threads,
         level_two_threads);
   }
 
-  // output total time
-  cout << total_time / runs << " seconds" << endl;
+  if (perf_time_fname) {
+    cerr << "writing time to '" << perf_time_fname << "': " <<
+      (total_time / runs) << endl;
+    ofstream f(perf_time_fname);
+    f << (total_time / runs);
+    f.close();
+  }
 
   return 0;
 }
