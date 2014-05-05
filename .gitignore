@@ -6,4 +6,5 @@
 *.bbl
 *.aux
 obj
-bin
+bin/main
+bin/test
