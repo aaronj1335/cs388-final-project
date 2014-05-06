@@ -1,5 +1,5 @@
 CPP = g++
-FLAGS = -Wall -Werror
+FLAGS = -Wall -Werror -O3
 MAIN_TARGET_BASE = main
 TEST_TARGET_BASE = test
 LIBRARIES = -fopenmp
