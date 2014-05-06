@@ -7,8 +7,8 @@ LIBRARIES = -fopenmp
 # compiler dance:
 # - default to g++
 # - but use g++-4.7/g++-4.8 if they're on the $PATH
-CPP47 = $(shell which c++-4.7)
-CPP48 = $(shell which c++-4.8)
+CPP47 = $(shell which c++-4.7 2>/dev/null)
+CPP48 = $(shell which c++-4.8 2>/dev/null)
 ifneq ($(wildcard $(CPP47)),)
 	CPP = g++-4.7
 endif
@@ -97,6 +97,10 @@ debug: all
 perf: all
 	@bin/perf
 
+taccrun:
+	@rm -rf hmmperf.*
+	@qsub bin/job_script
+
 
 # preprocessor
 pre:
@@ -113,7 +117,7 @@ $(REPORT_HTML): $(REPORT_SRC) etc/template.html etc/marked.js
 
 # cleanup
 
-.PHONY: clean
+.PHONY: clean taccrun
 clean:
 	-rm -rf $(OBJ_DIR) $(VAR_DIR) $(MAIN_TARGET)
 

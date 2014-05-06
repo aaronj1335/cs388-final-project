@@ -64,13 +64,15 @@ int main(int argc, char* argv[]) {
     usage(argv[0], EXIT_FAILURE);
 
   // average over several runs
-  int runs = 3;
+  /* int runs = 3; */
+  // (eff that whatevr)
+  int runs = 1;
 
   float total_time = 0;
   hmm m("<start>", "<end>", train);
 
   // warm up file system cache
-  time_function(m, test, level_one_threads, level_two_threads);
+  /* time_function(m, test, level_one_threads, level_two_threads); */
 
   for (int i = 0; i < runs; i++)
     total_time += time_function(m, test, level_one_threads, level_two_threads);

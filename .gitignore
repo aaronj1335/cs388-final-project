@@ -10,3 +10,4 @@ bin/main
 bin/test
 results
 data/convertedsubset
+hmmperf.*
