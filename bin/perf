@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-ns="128 256 512"
-level_1_threads="1 2 4 8 12"
-level_2_threads="1 2 4 8 12"
-cores=12
+: ${ns:="128 256 512"}
+: ${level_1_threads:="1 2 4 8 12"}
+: ${level_2_threads:="1 2 4 8 12"}
+: ${cores:="$(python -c 'import multiprocessing; print multiprocessing.cpu_count()')"}
 
 [ -d results ] || mkdir results
 
