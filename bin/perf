@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-: ${ns:="128 256 512"}
+: ${ns:="512 1024 2048"}
 : ${level_1_threads:="1 2 4 8 12"}
 : ${level_2_threads:="1 2 4 8 12"}
 : ${cores:="$(python -c 'import multiprocessing; print multiprocessing.cpu_count()')"}
