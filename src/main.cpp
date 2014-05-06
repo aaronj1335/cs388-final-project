@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
   int level_two_threads = 1;
 
   char opt;
-  while ((opt = getopt(argc, argv, "hr:t:n:m:p:")) != -1) {
+  while ((opt = (char) getopt(argc, argv, "hr:t:n:m:p:")) != -1) {
     switch (opt) {
       case 'r':
         train = optarg;
@@ -68,7 +68,7 @@ int main(int argc, char* argv[]) {
   // (eff that whatevr)
   int runs = 1;
 
-  float total_time = 0;
+  double total_time = 0;
   hmm m("<start>", "<end>", train);
 
   // warm up file system cache

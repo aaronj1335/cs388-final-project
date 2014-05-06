@@ -298,7 +298,7 @@ void run_tests() {
   }
 }
 
-int memoryLeakTest() {
+void memoryLeakTest() {
   while (true) {
     ifstream is("data/converted/1/section_0.pos");
 
@@ -307,8 +307,6 @@ int memoryLeakTest() {
       s.front();
     }
   }
-
-  return 0;
 }
 
 int iteratorPerfTest() {
@@ -346,7 +344,7 @@ int main(int argc, char* argv[]) {
   bool memoryLeakTestFlag = false;
   bool iteratorPerfTestFlag = false;
 
-  while ((opt = getopt(argc, argv, "mp")) != -1) {
+  while ((opt = (char) getopt(argc, argv, "mp")) != -1) {
     switch (opt) {
       case 'm':
         memoryLeakTestFlag = true;
@@ -361,7 +359,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (memoryLeakTestFlag)
-    return memoryLeakTest();
+    return memoryLeakTest(), 0;
 
   if (iteratorPerfTestFlag)
     return iteratorPerfTest();

@@ -62,6 +62,9 @@ sentence_iterator& sentence_iterator::operator++() {
 }
 
 sentence_iterator& sentence_iterator::operator++(int junk) {
+  // avoid icc compiler warnings
+  (void) junk;
+
   return (*this)++;
 }
 

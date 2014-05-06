@@ -1,20 +1,36 @@
 CPP = g++
+GPP = g++
 FLAGS = -Wall -Werror -O3
+DEP_FLAGS = -Wall -Werror
 MAIN_TARGET_BASE = main
 TEST_TARGET_BASE = test
-LIBRARIES = -fopenmp
+LIBRARIES =
 
 # compiler dance:
 # - default to g++
 # - but use g++-4.7/g++-4.8 if they're on the $PATH
 CPP47 = $(shell which c++-4.7 2>/dev/null)
 CPP48 = $(shell which c++-4.8 2>/dev/null)
+ICC   = $(shell which icpc 2>/dev/null)
 ifneq ($(wildcard $(CPP47)),)
 	CPP = g++-4.7
+	GPP = g++-4.7
 endif
 
 ifneq ($(wildcard $(CPP48)),)
 	CPP = g++-4.8
+	GPP = g++-4.8
+endif
+
+ifneq ($(wildcard $(ICC)),)
+	CPP = icpc
+	LIBRARIES += -openmp
+	# shoot me
+	FLAGS += -wd444 -wd1418 -wd383 -wd981 -wd1599 -wd193
+endif
+
+ifeq ($(wildcard $(ICC)),)
+	LIBRARIES += -fopenmp
 endif
 
 ifeq ($(DEBUG), 1)
@@ -66,7 +82,7 @@ $(BIN_DIR):
 # dependencies
 
 $(OBJ_DIR)/%.d: $(SRC_DIR)/%.hpp | $(OBJ_DIR)
-	$(CPP) $(FLAGS) $(LIBRARIES) -M -MF $@ -MT $(@:%.d=%.o) $<
+	$(GPP) $(DEP_FLAGS) -M -MF $@ -MT $(@:%.d=%.o) $<
 
 deps: $(DEPFILES)
 
