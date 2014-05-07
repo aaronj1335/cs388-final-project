@@ -105,6 +105,7 @@ $(VAR_DIR)/1d.txt: $(VAR_DIR)
 $(VAR_DIR)/4d.txt: $(VAR_DIR)
 	@python test/perfdata.py 4 > $@
 
+debug: FLAGS += -g -DTEST=1
 debug: all
 	lldb -- ./$(TEST_TARGET)
 
