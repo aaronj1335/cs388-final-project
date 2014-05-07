@@ -6,8 +6,9 @@ from os.path import join
 from itertools import chain
 from math import log
 
-from pylab import plot, show, legend, close, figure, title, xlabel, ylabel
+from pylab import plot, show, legend, close, figure, title, xlabel, ylabel, barh
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 
 
 N = 0               # problem size
@@ -95,27 +96,45 @@ def plot_strong_scaling(data, dataset=''):
     plot_scaling(data, the_title=(dataset + ' Strong Scaling'),
             munger=strong_scaling_data, labeler=labeler)
 
-fi = pl = None
-def plot_parallelization_levels(data, n, p):
-    global fi, pl
-    fi = figure()
-    title('Coarse versus fine-grained parallelism')
+def plot_parallelization_levels(data, n, p, dataset=''):
+    figure()
+    t = 'Coarse versus fine-grained parallelism'
+    if dataset:
+        t += ' (' + dataset + ')'
+    title(t)
     d = [(i[T], '%d X %d' % (i[P1], i[P2]))
             for idx, i in enumerate(data)
                 if i[N] == n and i[P1] * i[P2] == p]
     zippd = zip(*d)
     xs = range(len(zippd[0]))
-    pl = plot(xs, zippd[0], 'o-', label='Problem size: ' + str(n))
+    plot(xs, zippd[0], 'o-', label='Problem size: ' + str(n))
     plt.xticks(xs, zippd[1])
     legend()
     xlabel('Coarse grained threads X fine grained threads')
     ylabel('Time (seconds)')
     show(block=False)
 
+def plot_compiler_difference(gcc, intel):
+    n = max(i[N] for i in gcc)
+    gcc = [i for i in gcc if i[N] == n and i[P2] == 1]
+    intel = [i for i in intel if i[N] == n and i[P2] == 1]
+    d = [(i[P1] - 0.5, (i[T] - g[T]) / min(g[T], i[T]) * 100.)
+            for i, g in zip(intel, gcc)]
+    zippd = zip(*d)
+
+    figure()
+    plt.gca().xaxis.set_major_formatter(
+            FuncFormatter(lambda v, p: str(v) + ' %'))
+    title('Comparison of Intel and GNU comiler performance')
+    barh(zippd[0], zippd[1])
+    ylabel('Threads')
+    xlabel('Speedup')
+    show(block=False)
+
 data = wdata = sdata = intel_total_time = gcc_total_time = gcc_data = intel_data = None
 
 if __name__ == '__main__':
-    close(); close(); close(); close(); close(); # lololol
+    close(); close(); close(); close(); close(); close(); close(); close(); # lololol
 
     data = gcc_data = read_data('goodtokno/tacc_gcc47_O3_2048')
     wdata = weak_scaling_data(data)
@@ -133,7 +152,10 @@ if __name__ == '__main__':
     plot_strong_scaling(data, dataset='Intel')
     plot_weak_scaling(data, dataset='Intel')
 
-    plot_parallelization_levels(data, 2048, 8)
+    plot_parallelization_levels(intel_data, 2048, 8, dataset='Intel')
+    plot_parallelization_levels(gcc_data, 2048, 8, dataset='GCC')
+
+    plot_compiler_difference(gcc_data, intel_data)
 
     if BLOCK:
         raw_input()
