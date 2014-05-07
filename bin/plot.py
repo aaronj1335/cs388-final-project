@@ -10,10 +10,14 @@ from pylab import plot, show, legend, close, figure, title, xlabel, ylabel
 import matplotlib.pyplot as plt
 
 
-N = 0       # problem size
-P1 = 1      # num of level 1 threads
-P2 = 2      # num of level 2 threads
-T = 3       # running time
+N = 0               # problem size
+P1 = 1              # num of level 1 threads
+P2 = 2              # num of level 2 threads
+T = 3               # running time
+
+
+if 'BLOCK' not in globals():
+    BLOCK = True
 
 
 def is_truthy(x):
@@ -131,3 +135,5 @@ if __name__ == '__main__':
 
     plot_parallelization_levels(data, 2048, 8)
 
+    if BLOCK:
+        raw_input()
