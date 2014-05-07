@@ -6,7 +6,7 @@ from os.path import join
 from itertools import chain
 from math import log
 
-from pylab import plot, show, legend, close, figure, title
+from pylab import plot, show, legend, close, figure, title, xlabel, ylabel
 import matplotlib.pyplot as plt
 
 
@@ -77,6 +77,8 @@ def plot_scaling(data, the_title, munger, labeler):
         zippd = zip(*d)
         plot(zippd[0], zippd[1], 'o-', label=labeler(d))
     legend()
+    xlabel('Threads')
+    ylabel('Time (seconds)')
     show(block=False)
 
 def plot_weak_scaling(data, dataset=''):
@@ -94,7 +96,7 @@ def plot_parallelization_levels(data, n, p):
     global fi, pl
     fi = figure()
     title('Coarse versus fine-grained parallelism')
-    d = [(i[T], '%d x %d' % (i[P1], i[P2]))
+    d = [(i[T], '%d X %d' % (i[P1], i[P2]))
             for idx, i in enumerate(data)
                 if i[N] == n and i[P1] * i[P2] == p]
     zippd = zip(*d)
@@ -102,6 +104,8 @@ def plot_parallelization_levels(data, n, p):
     pl = plot(xs, zippd[0], 'o-', label='Problem size: ' + str(n))
     plt.xticks(xs, zippd[1])
     legend()
+    xlabel('Coarse grained threads X fine grained threads')
+    ylabel('Time (seconds)')
     show(block=False)
 
 data = wdata = sdata = intel_total_time = gcc_total_time = gcc_data = intel_data = None
