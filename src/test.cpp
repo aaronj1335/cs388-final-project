@@ -296,6 +296,24 @@ void run_tests() {
 
     assert(close(total_probability, 3.77704e-131));
   }
+
+
+  /*****************************************************************************
+   * hmm::parallel_viterbi
+   */
+  cout << "hmm::parallel_viterbi" << endl;
+
+  {
+    ifstream is("test/presubset/one.pos");
+    sentence_iterator si(&is);
+    hmm m("<start>", "<end>", si);
+
+    ifstream is2("test/presubset/one.pos");
+    sentence_iterator si2(&is2);
+
+    for (sentence_iterator end; si2 != end; ++si2)
+      assert(m.parallel_viterbi(*si2).size() == (*si2).size());
+  }
 }
 
 void memoryLeakTest() {
