@@ -7,6 +7,7 @@ from itertools import chain
 from math import log
 
 from pylab import plot, show, legend, close, figure, title
+import matplotlib.pyplot as plt
 
 
 N = 0       # problem size
@@ -88,10 +89,25 @@ def plot_strong_scaling(data, dataset=''):
     plot_scaling(data, the_title=(dataset + ' Strong Scaling'),
             munger=strong_scaling_data, labeler=labeler)
 
+fi = pl = None
+def plot_parallelization_levels(data, n, p):
+    global fi, pl
+    fi = figure()
+    title('Coarse versus fine-grained parallelism')
+    d = [(i[T], '%d x %d' % (i[P1], i[P2]))
+            for idx, i in enumerate(data)
+                if i[N] == n and i[P1] * i[P2] == p]
+    zippd = zip(*d)
+    xs = range(len(zippd[0]))
+    pl = plot(xs, zippd[0], 'o-', label='Problem size: ' + str(n))
+    plt.xticks(xs, zippd[1])
+    legend()
+    show(block=False)
+
 data = wdata = sdata = intel_total_time = gcc_total_time = gcc_data = intel_data = None
 
 if __name__ == '__main__':
-    close(); close(); close(); close();
+    close(); close(); close(); close(); close(); # lololol
 
     data = gcc_data = read_data('goodtokno/tacc_gcc47_O3_2048')
     wdata = weak_scaling_data(data)
@@ -108,4 +124,6 @@ if __name__ == '__main__':
 
     plot_strong_scaling(data, dataset='Intel')
     plot_weak_scaling(data, dataset='Intel')
+
+    plot_parallelization_levels(data, 2048, 8)
 
