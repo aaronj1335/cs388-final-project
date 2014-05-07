@@ -15,6 +15,16 @@ double testable_rand() {
 #endif
 }
 
+size_t argmax(const vector<double>& v) {
+  size_t idx = 0;
+
+  for (size_t i = 1; i < v.size(); i++)
+    if (v[i] > v[idx])
+      idx = i;
+
+  return idx;
+}
+
 
 /*******************************************************************************
  * hmm
@@ -120,7 +130,6 @@ double hmm::parallel_forward(const sentence& s) {
     #pragma omp parallel for
       for (size_t st = 0; st < num_pos; ++st) {
         if (t == 0)
-          // should this go in the initialization loop?
           lattice[t][st] = transitions[start_tag][tag_vector[st]];
         else
           for (size_t o = 0; o < num_pos; ++o)
@@ -137,4 +146,51 @@ double hmm::parallel_forward(const sentence& s) {
       lattice[t - 1][st] * transitions[tag_vector[st]][end_tag];
 
   return probability;
+}
+
+vector<string> hmm::parallel_viterbi(const sentence& s) {
+  vector<vector<double> > lattice(s.size());
+  vector<vector<size_t> > backtrace(s.size());
+  size_t num_pos = tag_vector.size();
+
+  #pragma omp parallel for
+    for (size_t i = 0; i < s.size(); ++i) {
+      lattice[i] = vector<double>(num_pos);
+      backtrace[i] = vector<size_t>(num_pos);
+    }
+
+  size_t t = 0;
+  for (; t < s.size(); ++t) {
+
+    #pragma omp parallel for
+      for (size_t st = 0; st < num_pos; ++st) {
+        size_t argmax = 0;
+
+        if (t == 0) {
+          lattice[t][st] = transitions[start_tag][tag_vector[st]];
+        } else {
+          lattice[t][st] =
+            lattice[t - 1][0] * transitions[tag_vector[0]][tag_vector[st]];
+          for (size_t o = 1; o < num_pos; ++o) {
+            double val =
+              lattice[t - 1][o] * transitions[tag_vector[o]][tag_vector[st]];
+            argmax = 0;
+            if (val > lattice[t][st]) {
+              lattice[t][st] = val;
+              argmax = o;
+            }
+          }
+
+        lattice[t][st] *= emissions[tag_vector[st]][s[t].first];
+        backtrace[t][st] = argmax;
+        }
+      }
+  }
+
+  vector<string> output_seq(t);
+  output_seq[t - 1] = tag_vector[backtrace[t - 1][argmax(lattice[t - 1])]];
+  for (int i = t - 2; i >= 0; i--)
+    output_seq[i] = tag_vector[backtrace[i][argmax(lattice[t - 1])]];
+
+  return output_seq;
 }

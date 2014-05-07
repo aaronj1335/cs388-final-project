@@ -51,6 +51,8 @@ class hmm {
 
     double parallel_forward(const sentence& s);
 
+    std::vector<std::string> parallel_viterbi(const sentence& s);
+
     // state emitting tag
     emissions_t emissions;
     // state transitioning to state
