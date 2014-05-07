@@ -11,3 +11,4 @@ bin/test
 results
 data/convertedsubset
 hmmperf.*
+coarsevsfineperf.*

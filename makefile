@@ -118,6 +118,10 @@ taccrun:
 	@rm -rf hmmperf.*
 	@qsub bin/job_script
 
+coarse_vs_fine:
+	@rm -rf coarsevsfineperf.*
+	@qsub bin/coarse_vs_fine_job_script
+
 
 # preprocessor
 pre:

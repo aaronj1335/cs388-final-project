@@ -1,0 +1,22 @@
+#!/bin/bash -e
+
+# IMPORTANT: for this to be relevant you have to remove the nesting in the code
+
+n=4096
+
+module swap intel gcc/4.7.1 || true
+make clean && make test && make
+
+[ -d results ] || mkdir results
+rm -f results/*
+
+bin/maketestdata.py -l $n -n 1
+
+for t in 1 2 4 8 12; do
+  bin/main \
+    -r data/converted/1/section_0.pos \
+    -t data/convertedsubset/1 \
+    -n 1 \
+    -m $t \
+    -p results/${n}_1_${t}.txt
+done
