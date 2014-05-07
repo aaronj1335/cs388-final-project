@@ -53,7 +53,7 @@ MAIN_OBJECTS = $(filter-out $(OBJ_DIR)/$(TEST_TARGET_BASE).o,$(OBJECTS))
 TEST_OBJECTS = $(filter-out $(OBJ_DIR)/$(MAIN_TARGET_BASE).o,$(OBJECTS))
 DEPFILES = $(OBJECTS:%.o=%.d)
 
-PREPROCESS_FILES = $(wildcard $(UTIL_DIR)/*.py)
+PREPROCESS_FILE = $(BIN_DIR)/preprocess.py
 
 REPORT_HTML = report/report.html
 REPORT_SRC = report/report.md
@@ -125,7 +125,7 @@ coarse_vs_fine:
 
 # preprocessor
 pre:
-	@python $(PREPROCESS_FILES) data/penn-treebank-wsj $(OUT) $(NUM)
+	@python $(PREPROCESS_FILE) data/penn-treebank-wsj $(OUT) $(NUM)
 
 
 # report
