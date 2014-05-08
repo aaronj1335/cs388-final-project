@@ -134,7 +134,7 @@ def plot_compiler_difference(gcc, intel):
 data = wdata = sdata = intel_total_time = gcc_total_time = gcc_data = intel_data = None
 
 if __name__ == '__main__':
-    close(); close(); close(); close(); close(); close(); close(); close(); # lololol
+    close(); close(); close(); close(); close(); close(); close(); close(); close(); # lololol
 
     data = gcc_data = read_data('goodtokno/tacc_gcc47_O3_2048')
     wdata = weak_scaling_data(data)
@@ -156,6 +156,9 @@ if __name__ == '__main__':
     plot_parallelization_levels(gcc_data, 2048, 8, dataset='GCC')
 
     plot_compiler_difference(gcc_data, intel_data)
+
+    data = read_data('goodtokno/tacc_gcc47_O3_coarsevsfineperf')
+    plot_strong_scaling(data, dataset='GCC Without Nested Parallelism -')
 
     if BLOCK:
         raw_input()
