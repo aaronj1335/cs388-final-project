@@ -20,6 +20,8 @@
 %\usepackage{hyperref} % we can use this, but it makes a weird table of contents with the formatting we are using
 
 \newcommand{\h}[1]{\hl{#1}}
+\newcommand{\specialcell}[2][c]{%
+  \begin{tabular}[#1]{@{}l@{}}#2\end{tabular}}
 
 \singlespacing	% we can bump this to \onehalfspacing to increase readability if you want
 
@@ -80,7 +82,31 @@ Because of the difference in application domain, the specifics of the approach t
 
 \Section{Method Overview}
 
-\SubSection{Subsection}
+Before implementing any of the algorithms, we first wrote a preprocessor to format the Penn Treebank data. Initially, the Penn Treebank files contained \texttt{<word>/<label>} pairs on each line and this format was not suitable for us. The preprocessor we implemented removed the irrelevant information and each output line contained a sentence of \texttt{<word>/<label>} pairs. An example is shown in Table \ref{table:preprocess}. Our preprocessor also split the data up into multiple sections which helped later on during parallelization.
+
+\begin{figure}
+\centering
+\begin{tabular}{c c l}
+List/VB & $\rightarrow$ & List/VB \\
+$[$ the/DT flights/NNS $]$ & $\rightarrow$ & \specialcell{the/DT\\flights/NNS} \\
+from/IN & $\rightarrow$ & from/IN \\
+$[$ Baltimore/NNP $]$ & $\rightarrow$ & Baltimore/NNP \\
+\end{tabular}
+\caption{Example of preprocessor converting Penn Treebank files}
+\label{table:preprocess}
+\end{figure}
+
+\SubSection{Sequential}
+
+Next, we needed to implement sequential versions of the two algorithms. From their definitions, the implementations of the Viterbi and Forward algorithms were straightforward. Since we were not concerned with the resulting scores from the algorithms, we did not construct the probability distribution from the training set, but rather used a random value for the probability of each transition, $P(t_{i}|t_{i-1})$, and emission, $P(w_i|t_i)$. However, we did use the actual words and tags from the dataset.
+
+\SubSection{Parallelization}
+
+Using OpenMP, we were able to add parallelization to the sequential algorithms we had written. In addition, to achieve scalability beyond the limits of memory afforded by the system, the algorithms needed to divide the work into tractable chunks and process them incrementally by bringing a chunk into memory, processing it, and then either writing it out or reducing it, depending on the calculating. We utilized parallelization to overlap the I/O work with computation. 
+
+This parallelization allowed us to explore possible speedups by reading data and allocating the lattice in parallel with applying the Viterbi algorithm. In other words, while on thread or process is reading data from disk, the other can run the algorithm.
+
+Note that this is the most coarse-grained parallelism we will be doing. Since each step of the sequence involves a significant amount of calculation we have the opportunity for more parallelization, however streaming algorithms only appear to be applicable at the most coarse level for our purposes.
 
 \Section{Experimental Evaluation}
 
