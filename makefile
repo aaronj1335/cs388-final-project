@@ -55,8 +55,8 @@ DEPFILES = $(OBJECTS:%.o=%.d)
 
 PREPROCESS_FILE = $(BIN_DIR)/preprocess.py
 
-REPORT_HTML = report/report.html
-REPORT_SRC = report/report.md
+REPORT_PDF = report/report.pdf
+REPORT_SRC = report/report.tex
 
 
 # main application
@@ -130,10 +130,10 @@ pre:
 
 # report
 
-report: $(REPORT_HTML)
+report: $(REPORT_PDF)
 
-$(REPORT_HTML): $(REPORT_SRC) etc/template.html etc/marked.js
-	python etc/buildreport.py < $< > $@
+$(REPORT_PDF): $(REPORT_SRC)
+	( cd report && pdflatex report.tex )
 
 
 # cleanup

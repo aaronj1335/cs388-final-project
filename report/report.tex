@@ -110,7 +110,14 @@ Note that this is the most coarse-grained parallelism we will be doing. Since ea
 
 \Section{Experimental Evaluation}
 
+We evaluated our implementation on the Wall Street Journal section of the Penn Treebank, which has 45,920 sentences and 1,107,365 part-of-speech tagged words.
+
+We evaluated our work by running the algorithm on the Lonestar section of the Texas Advanced Computing Cluster (TACC) \footnote{\url{https://www.tacc.utexas.edu/resources/hpc/lonestar}}. These machines run compute nodes with two sockets each, each socket containing six cores, giving each process up to 12 simultaneous processors.
+
 \SubSection{Methodology}
+
+Since our implementation had two levels of parallelism, coarse grained and fine grained, we characterized performance from a single thread at each level up to 12. We did not look at more than a total of 12 threads, though, since the computation is not I/O bound and running more than a total of 12 threads would degrade performance.
+
 
 \SubSection{Results}
 
