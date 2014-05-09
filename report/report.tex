@@ -112,16 +112,59 @@ Note that this is the most coarse-grained parallelism we will be doing. Since ea
 
 We evaluated our implementation on the Wall Street Journal section of the Penn Treebank, which has 45,920 sentences and 1,107,365 part-of-speech tagged words.
 
-We evaluated our work by running the algorithm on the Lonestar section of the Texas Advanced Computing Cluster (TACC) \footnote{\url{https://www.tacc.utexas.edu/resources/hpc/lonestar}}. These machines run compute nodes with two sockets each, each socket containing six cores, giving each process up to 12 simultaneous processors.
+We ran the algorithm on the Lonestar section of the Texas Advanced Computing Cluster (TACC)\footnote{\url{https://www.tacc.utexas.edu/resources/hpc/lonestar}}. These machines run compute nodes with two sockets each, each socket containing six cores, giving each process up to 12 simultaneous processors.
 
 \SubSection{Methodology}
 
-Since our implementation had two levels of parallelism, coarse grained and fine grained, we characterized performance from a single thread at each level up to 12. We did not look at more than a total of 12 threads, though, since the computation is not I/O bound and running more than a total of 12 threads would degrade performance.
+Since our implementation had two levels of parallelism, coarse grained and fine grained, we characterized performance from a single thread at each level up to 12. We did not look at more than a total of 12 threads, though, since the computation is not I/O bound and running more than a total of 12 threads degrades.
 
+We ran the implementation over 5\%, 10\%, and 20\% of the full dataset when determining scaling, and against the full dataset to determine peak performance.
+
+We compared performance of the GNU and Intel compilers.
 
 \SubSection{Results}
 
+We acheived relatively good scaling as shown in the strong scaling plot, Figure ~\ref{fig:strong_scaling}. While the speedup is not perfect, we are able to maintain performance increases as we increase threads all the way up to the cores available on the machine. Note that in the scaling figures the number of threads is the total number of both coarse and fine-grained threads. The scaling plots report the best performing of the thread combinations.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.75\linewidth]{figures/intel_strong_scaling}
+\caption{Strong scaling}
+\label{fig:strong_scaling}
+\end{figure}
+
+We found that the optimal thread combinations either used all coarse-grained or all fine-grained threads (see Figure ~\ref{fig:combo}). While there's nothing inheriant to the algorithm that would cause this, we think that processor affinity could be the source of the slowdown. Since the TACC machines have a non-uniform memory architecture (NUMA), the two sockets per node do not share the same memory, so threads scheduled on different sockets incur communication costs when writing to the same address space. OpenMP does not provide an API to specify processor affinity, so we can't deterministically avoid this situation.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.75\linewidth]{figures/coarse_versus_fine-grained_parallelism_(intel)}
+\caption{Coarse versus fine grained parallelism}
+\label{fig:combo}
+\end{figure}
+
+We also found what appears to be a bug in g++ 4.7. When scheduling only fine-grained threads in g++ compiled binaries, the running time increases drastically (Figure ~\ref{fig:combo_gcc}).
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.75\linewidth]{figures/coarse_versus_fine-grained_parallelism_(gcc)}
+\caption{Coarse versus fine grained parallelism}
+\label{fig:combo_gcc}
+\end{figure}
+
+If we kept the coarse-grained threads at one, but removed the outer OpenMP directive, the running time dropped to the expected amount, suggesting that the source of the bug is g++'s handling of the nested OpenMP directives. This is a relatively new feature of OpenMP that is poorly specified\footnote{\url{http://www.openmp.org/mp-documents/OpenMP4.0.0.pdf}} and saw slow adoption among the compilers. Our suspicions were further confirmed when we did not see the problematic behavior on g++ 4.8.
+
+We were also caught off guard by how much better the GNU-compiled code performed than the Intel-compiled code. The Intel compiler, being made by the same company that manufactures the chip, is generally thought to perform better, however in our tests the GNU-compiled code ran almost twice as fast (Figure ~\ref{fig:gccvsintel}). We expect that this is a configuration issue, though we did ensure that the -O3 flag was used in all performance benchmarks.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=.75\linewidth]{figures/comparison_of_intel_and_gnu_comiler_performance}
+\caption{Speedup of GCC compiler over Intel compiler}
+\label{fig:gccvsintel}
+\end{figure}
+
 \Section{Future Work}
+
+Our future work would include further investigation of the poor performance we saw when combining levels of parallelism. The two approaches we would take to address this is using a version of OpenMP that supports processor affinity specification, such as the latest Intel compiler or clang-openmp\footnote{\url{http://clang-omp.github.io}}. Furthermore we could address affinity concerns by using MPI\footnote{\url{http://www.dmoz.org/Computers/Parallel_Computing/Programming/Libraries/MPI}} to create a distributed parallel system. This would also allow us to take advantage of more parallelism and decrease the time required to arrive at a solution.
 
 \Section{Conclusion}
 
