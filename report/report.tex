@@ -27,7 +27,7 @@
 
 \begin{document}
 
-\title{Clever Title}
+\title{Improving Performance of the Viterbi Algorithm with Parallelism}
 
 \author{
  Aaron Stacy \\ \and
@@ -125,7 +125,7 @@ We initially set out to explore three levels of parallelism:
 
 \Section{Experimental Evaluation}
 
-We evaluated our implementation on the Wall Street Journal section of the Penn Treebank, which has 45,920 sentences and 1,107,365 part-of-speech tagged words.
+We evaluated our implementation on the Wall Street Journal section of the Penn Treebank, which has 45,920 sentences and 1,107,365 part-of-speech tagged words. We defined the problem size to be the number of words processed.
 
 We ran the algorithm on the Lonestar section of the Texas Advanced Computing Cluster (TACC)\footnote{\url{https://www.tacc.utexas.edu/resources/hpc/lonestar}}. These machines run compute nodes with two sockets each, each socket containing six cores, giving each process up to 12 simultaneous processors.
 
