@@ -6,7 +6,8 @@ from os.path import join
 from itertools import chain
 from math import log
 
-from pylab import plot, show, legend, close, figure, title, xlabel, ylabel, barh
+from pylab import plot, show, legend, close, figure, title, xlabel, ylabel, barh, savefig
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FuncFormatter
 
@@ -16,10 +17,26 @@ P1 = 1              # num of level 1 threads
 P2 = 2              # num of level 2 threads
 T = 3               # running time
 
+# we still store all figures here
+out_dir = "report/figures/"
+
+# make the output directory if necessary
+if not os.path.exists(out_dir):
+    os.makedirs(out_dir)
+
+BLOCK = False
 
 if 'BLOCK' not in globals():
     BLOCK = True
 
+def prettify(func):
+    def inner(*args, **kwargs):
+        
+        # update a few params about the
+        mpl.rcParams['font.family'] = 'serif'
+
+        return func(*args, **kwargs)
+    return inner
 
 def is_truthy(x):
     return bool(x)
@@ -75,33 +92,58 @@ def strong_scaling_data(data):
 
     return sets
 
+@prettify
 def plot_scaling(data, the_title, munger, labeler):
     figure()
-    title(the_title)
+    
     for d in munger(data):
         zippd = zip(*d)
+
+        # special case
+        if 'Intel Weak' in the_title:
+            if str(512*24) not in labeler(d):
+                continue
+
         plot(zippd[0], zippd[1], 'o-', label=labeler(d))
     legend()
     xlabel('Threads')
     ylabel('Time (seconds)')
-    show(block=False)
+
+    if 'Intel Weak' in the_title:
+        # force y axis to be int
+        ax = plt.gca()
+
+        yticks = ax.get_yticks()
+
+        # ensure these are ints
+        bounds = map(int, (min(yticks), max(yticks)))
+        ax.set_yticks(range(bounds[0]-4, bounds[1]+4))
+
+
+    t = "_".join(the_title.lower().split()) + ".png"
+    savefig(out_dir + t, dpi=100)
+    print t
 
 def plot_weak_scaling(data, dataset=''):
-    labeler = lambda d: 'Ratio: ' + str(d[0][2][0] / (d[0][2][1] * d[0][2][2]))
+    labeler = lambda d: 'Ratio: ' + str(d[0][2][0] / (d[0][2][1] * d[0][2][2]) * 24)
+
     plot_scaling(data, the_title=(dataset + ' Weak Scaling'),
             munger=weak_scaling_data, labeler=labeler)
 
 def plot_strong_scaling(data, dataset=''):
-    labeler = lambda d: 'Size: ' + str(d[0][2][N])
+    # need to multiply by 24 to find true problem size
+    labeler = lambda d: 'Size: ' + str(d[0][2][N] * 24)
+
     plot_scaling(data, the_title=(dataset + ' Strong Scaling'),
             munger=strong_scaling_data, labeler=labeler)
 
+@prettify
 def plot_parallelization_levels(data, n, p, dataset=''):
     figure()
     t = 'Coarse versus fine-grained parallelism'
     if dataset:
         t += ' (' + dataset + ')'
-    title(t)
+    
     d = [(i[T], '%d X %d' % (i[P1], i[P2]))
             for idx, i in enumerate(data)
                 if i[N] == n and i[P1] * i[P2] == p]
@@ -112,8 +154,12 @@ def plot_parallelization_levels(data, n, p, dataset=''):
     legend()
     xlabel('Coarse grained threads X fine grained threads')
     ylabel('Time (seconds)')
-    show(block=False)
+    
+    t = "_".join(t.lower().split()) + ".png"
+    savefig(out_dir + t, dpi=100)
+    print t
 
+@prettify
 def plot_compiler_difference(gcc, intel):
     n = max(i[N] for i in gcc)
     gcc = [i for i in gcc if i[N] == n and i[P2] == 1]
@@ -125,11 +171,14 @@ def plot_compiler_difference(gcc, intel):
     figure()
     plt.gca().xaxis.set_major_formatter(
             FuncFormatter(lambda v, p: str(v) + ' %'))
-    title('Comparison of Intel and GNU comiler performance')
+    t = 'Comparison of Intel and GNU comiler performance'
     barh(zippd[0], zippd[1])
     ylabel('Threads')
     xlabel('Speedup')
-    show(block=False)
+    
+    t = "_".join(t.lower().split()) + ".png"
+    savefig(out_dir + t, dpi=100)
+    print t
 
 data = wdata = sdata = intel_total_time = gcc_total_time = gcc_data = intel_data = None
 
