@@ -10,14 +10,20 @@ CS 388 Spring 2014 Final Project
 
 [Final Report](report/report.pdf)
 
+## Compiling
+
+```
+$ make clean && make
+```
+
 ## Running the Experiments
 
 ```
-$ make perf
+$ make clean && make perf
 ```
 
 ## Running Tests
 
 ```
-$ make test
+$ make clean && make test
 ```
