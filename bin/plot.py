@@ -101,24 +101,40 @@ def plot_scaling(data, the_title, munger, labeler):
 
         # special case
         if 'Intel Weak' in the_title:
-            if str(512*24) not in labeler(d):
+            if str(2048*24) not in labeler(d):
                 continue
 
         plot(zippd[0], zippd[1], 'o-', label=labeler(d))
     legend()
     xlabel('Threads')
     ylabel('Time (seconds)')
+    
+
+
+
+    ax = plt.gca()
+    current = map(int, ax.get_xticks())
+
+    # just to wash out dups
+    padding = sorted(set(current))
+
+    # put one tick at the end
+    padding += [max(padding) + padding[1] - padding[0]]
+
+    # ensure we start from zero
+    if padding[0] != 0:
+        padding = [0] + padding
+
+    # finalize xticks
+    ax.set_xticks(padding)
 
     if 'Intel Weak' in the_title:
         # force y axis to be int
-        ax = plt.gca()
-
         yticks = ax.get_yticks()
 
         # ensure these are ints
         bounds = map(int, (min(yticks), max(yticks)))
-        ax.set_yticks(range(bounds[0]-4, bounds[1]+4))
-
+        ax.set_yticks(range(bounds[0]-2, bounds[1]+3))
 
     t = "_".join(the_title.lower().split()) + ".png"
     savefig(out_dir + t, dpi=100)
@@ -193,7 +209,7 @@ if __name__ == '__main__':
     plot_strong_scaling(data, dataset='GCC')
     plot_weak_scaling(data, dataset='GCC')
 
-    data = intel_data = read_data('goodtokno/tacc_intel_O3_2048')
+    data = intel_data = read_data('goodtokno/tacc_intel_O3_8192')
     wdata = weak_scaling_data(data)
     sdata = strong_scaling_data(data)
     intel_total_time = sum(map(lambda i: i[T], data))
@@ -201,7 +217,7 @@ if __name__ == '__main__':
     plot_strong_scaling(data, dataset='Intel')
     plot_weak_scaling(data, dataset='Intel')
 
-    plot_parallelization_levels(intel_data, 2048, 8, dataset='Intel')
+    plot_parallelization_levels(intel_data, 8192, 8, dataset='Intel')
     plot_parallelization_levels(gcc_data, 2048, 8, dataset='GCC')
 
     plot_compiler_difference(gcc_data, intel_data)
