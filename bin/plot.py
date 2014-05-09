@@ -108,9 +108,6 @@ def plot_scaling(data, the_title, munger, labeler):
     legend()
     xlabel('Threads')
     ylabel('Time (seconds)')
-    
-
-
 
     ax = plt.gca()
     current = map(int, ax.get_xticks())
@@ -148,7 +145,7 @@ def plot_weak_scaling(data, dataset=''):
 
 def plot_strong_scaling(data, dataset=''):
     # need to multiply by 24 to find true problem size
-    labeler = lambda d: 'Size: ' + str(d[0][2][N] * 24)
+    labeler = lambda d: 'Problem size: ' + str(d[0][2][N] * 24)
 
     plot_scaling(data, the_title=(dataset + ' Strong Scaling'),
             munger=strong_scaling_data, labeler=labeler)
