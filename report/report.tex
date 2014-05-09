@@ -44,7 +44,7 @@ Closely related to the Viterbi algorithm is the Forward algorithm, which is used
 
 Work on improving the Viterbi algorithm typically comes from the realm of signal processing, rather than NLP, where these gains greatly help with the decoding of signals. Typically, these improvements deal with a hardware Viterbi decoder and ways to modify this hardware in order to enhance the parallelization of the decoding problem.
 
-Rather than approaching this task from a hardware perspective, we wanted to improve these algorithms with parallelization techniques. We implemented a parallel version of the Viterbi and Forward algorithms using the OpenMP API \footnote{\url{http://openmp.org/wp/}} and characterized the performance over a range of workloads. We tested this on the Wall Street Journal dataset from the Penn Treebank and varied the size of the dataset to measure performance. We ran the algorithm on the TACC cluster in order to find strong and weak scaling characteristics.
+We believe that parallelism affords significant performance gains when applying the Viterbi algorithm to NLP as well, so the goal of this experiment was to utilize parallelization techniques on the Viterbi and Forward algorithms to reduce the running time of these polynomial time algorithms. We implemented a parallel version of the Viterbi and Forward algorithms using the OpenMP API \footnote{\url{http://openmp.org/wp/}} and characterized the performance over a range of workloads. We tested this on the Wall Street Journal dataset from the Penn Treebank and varied the size of the dataset to measure performance. We ran the algorithm on the TACC cluster in order to find strong and weak scaling characteristics.
 
 \Section{Related Work}
 
@@ -182,6 +182,8 @@ We were also caught off guard by how much better the GNU-compiled code performed
 Our future work would include further investigation of the poor performance we saw when combining levels of parallelism. The two approaches we would take to address this is using a version of OpenMP that supports processor affinity specification, such as the latest Intel compiler or clang-openmp\footnote{\url{http://clang-omp.github.io}}. Furthermore we could address affinity concerns by using MPI\footnote{\url{http://www.dmoz.org/Computers/Parallel_Computing/Programming/Libraries/MPI}} to create a distributed parallel system. This would also allow us to take advantage of more parallelism and decrease the time required to arrive at a solution.
 
 \Section{Conclusion}
+
+We applied a number of parallelization techniques to the Viterbi and forward algorithms for processing data in regards to parts-of-speech. We were able to acheive significant speedup through multiple levels of parallelism and by overlapping file I/O with the actual computation. We believe that we could acheive even greater gains by using a distributed algorithm, and that the techniques we found could be used to improve performance on a broader range of applications of the Viterbi algorithm including learning.
 
 \begin{thebibliography}{1}
 \small
