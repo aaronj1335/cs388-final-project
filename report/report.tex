@@ -106,7 +106,22 @@ Using OpenMP, we were able to add parallelization to the sequential algorithms w
 
 This parallelization allowed us to explore possible speedups by reading data and allocating the lattice in parallel with applying the Viterbi algorithm. In other words, while on thread or process is reading data from disk, the other can run the algorithm.
 
-Note that this is the most coarse-grained parallelism we will be doing. Since each step of the sequence involves a significant amount of calculation we have the opportunity for more parallelization, however streaming algorithms only appear to be applicable at the most coarse level for our purposes.
+We initially set out to explore three levels of parallelism:
+
+\begin{enumerate}
+  \item Our most coarse-grained parallelism is simply processing different sentences in parallel. For the most part, this classifies as ``embarassingly parallel,'' since there is no coordination needed between the threads as they process the data. The only coordination required at the end of the forward algorithm is multiplying all of the results to get the full observation probability, which can be accomplished with a strait-forward parallel reduction.
+
+  \item Our fine-grained parallelism involves parallelizing within the Viterbi and forward algorithms. Each time step involves an $O(n^2)$ calculation that is essentially a matrix-vector multiplication (with a unit vector).
+
+\item The final level of parallelism that we explored but did not implement involved parallelizing across time steps of the forward algorithm. Recall that each step involves the recursion, where $v$ refers to the forward lattice, $t$ the time step, $j$ the current state, $n$ the number of states, $b$ the observation probability, and $a$ the transition probability:
+
+  \begin{equation}
+    v_{t,j} = b_j(t) \sum_{k=0}^n v_{t - 1, k} a_{k,j}
+  \end{equation}
+
+  We were hoping to be able to modify this such that we could calculate the values of the lattice with a parallel prefix sum, however the recursion is exponential not linear (there is a factor of $n$ steps at each of the $t$ iterations), so we could not find a way to do this.
+
+\end{enumerate}
 
 \Section{Experimental Evaluation}
 
