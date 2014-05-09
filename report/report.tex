@@ -42,7 +42,7 @@ Originally developed by Andrew Viterbi to decode signals over noisy channels, th
 
 Closely related to the Viterbi algorithm is the Forward algorithm, which is used within NLP to efficiently compute observation likelihood. While not as popular as the Viterbi algorithm, the Forward algorithm is a fundamental algorithm within NLP. The implementations of the two algorithms are actually quite similar and they share the same running time of $O(T N^2)$.
 
-Work on improving the Viterbi algorithm typically comes from the realm of signal processing, rather than NLP, where these gains greatly help with the decoding of signals. Typically, these improvements deal with a hardware viterbi decoder and ways to modify this hardware in order to enhance the parallelization of the decoding problem.
+Work on improving the Viterbi algorithm typically comes from the realm of signal processing, rather than NLP, where these gains greatly help with the decoding of signals. Typically, these improvements deal with a hardware Viterbi decoder and ways to modify this hardware in order to enhance the parallelization of the decoding problem.
 
 Rather than approaching this task from a hardware perspective, we wanted to improve these algorithms with parallelization techniques. We implemented a parallel version of the Viterbi and Forward algorithms using the OpenMP API \footnote{\url{http://openmp.org/wp/}} and characterized the performance over a range of workloads. We tested this on the Wall Street Journal dataset from the Penn Treebank and varied the size of the dataset to measure performance. We ran the algorithm on the TACC cluster in order to find strong and weak scaling characteristics.
 
@@ -109,7 +109,7 @@ This parallelization allowed us to explore possible speedups by reading data and
 We initially set out to explore three levels of parallelism:
 
 \begin{enumerate}
-  \item Our most coarse-grained parallelism is simply processing different sentences in parallel. For the most part, this classifies as ``embarassingly parallel,'' since there is no coordination needed between the threads as they process the data. The only coordination required at the end of the forward algorithm is multiplying all of the results to get the full observation probability, which can be accomplished with a strait-forward parallel reduction.
+  \item Our most coarse-grained parallelism is simply processing different sentences in parallel. For the most part, this classifies as ``embarrassingly parallel,'' since there is no coordination needed between the threads as they process the data. The only coordination required at the end of the forward algorithm is multiplying all of the results to get the full observation probability, which can be accomplished with a strait-forward parallel reduction.
 
   \item Our fine-grained parallelism involves parallelizing within the Viterbi and forward algorithms. Each time step involves an $O(n^2)$ calculation that is essentially a matrix-vector multiplication (with a unit vector).
 
