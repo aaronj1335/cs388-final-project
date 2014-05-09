@@ -136,8 +136,8 @@ def plot_scaling(data, the_title, munger, labeler):
         bounds = map(int, (min(yticks), max(yticks)))
         ax.set_yticks(range(bounds[0]-2, bounds[1]+3))
 
-    t = "_".join(the_title.lower().split()) + ".png"
-    savefig(out_dir + t, dpi=100)
+    t = "_".join(the_title.lower().split()) + ".pdf"
+    savefig(out_dir + t, dpi=100, format='pdf')
     print t
 
 def plot_weak_scaling(data, dataset=''):
@@ -171,8 +171,8 @@ def plot_parallelization_levels(data, n, p, dataset=''):
     xlabel('Coarse grained threads X fine grained threads')
     ylabel('Time (seconds)')
     
-    t = "_".join(t.lower().split()) + ".png"
-    savefig(out_dir + t, dpi=100)
+    t = "_".join(t.lower().split()) + ".pdf"
+    savefig(out_dir + t, dpi=100, format='pdf')
     print t
 
 @prettify
@@ -192,8 +192,8 @@ def plot_compiler_difference(gcc, intel):
     ylabel('Threads')
     xlabel('Speedup')
     
-    t = "_".join(t.lower().split()) + ".png"
-    savefig(out_dir + t, dpi=100)
+    t = "_".join(t.lower().split()) + ".pdf"
+    savefig(out_dir + t, dpi=100, format='pdf')
     print t
 
 data = wdata = sdata = intel_total_time = gcc_total_time = gcc_data = intel_data = None
