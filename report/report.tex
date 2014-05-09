@@ -133,7 +133,7 @@ We ran the algorithm on the Lonestar section of the Texas Advanced Computing Clu
 
 Since our implementation had two levels of parallelism, coarse grained and fine grained, we characterized performance from a single thread at each level up to 12. We did not look at more than a total of 12 threads, since the computation is not I/O bound and running more than a total of 12 threads degrades.
 
-We ran the implementation over 5\%, 10\%, and 20\% of the full dataset when determining scaling, and against the full dataset to determine peak performance.
+We ran the implementation over 5\%, 10\%, and 20\% of the full dataset when determining scaling, and against the full dataset to determine peak performance. The times reported apply specifically to the Forward algorithm, though results are expected to be the same for the Viterbi algorithm since it varies only slightly.
 
 We compared performance of the GNU and Intel compilers.
 
