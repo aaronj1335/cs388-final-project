@@ -114,7 +114,7 @@ This parallelization allowed us to explore possible speedups by reading data and
 We initially set out to explore three levels of parallelism:
 
 \begin{enumerate}
-  \item Our most coarse-grained parallelism is simply processing different sentences in parallel. For the most part, this classifies as ``embarrassingly parallel,'' since there is no coordination needed between the threads as they process the data. The only coordination required at the end of the forward algorithm is multiplying all of the results to get the full observation probability, which can be accomplished with a strait-forward parallel reduction.
+  \item Our most coarse-grained parallelism is simply processing different sentences in parallel. For the most part, this classifies as ``embarrassingly parallel,'' since there is no coordination needed between the threads as they process the data. The only coordination required at the end of the forward algorithm is multiplying all of the results to get the full observation probability, which can be accomplished with a straight-forward parallel reduction.
 
   \item Our fine-grained parallelism involves parallelizing within the Viterbi and forward algorithms. Each time step involves an $O(n^2)$ calculation that is essentially a matrix-vector multiplication (with a unit vector).
 
@@ -144,7 +144,7 @@ We compared performance of the GNU and Intel compilers.
 
 \SubSection{Results}
 
-We achieved relatively good scaling as shown in the strong scaling plot, Figure ~\ref{fig:strong_scaling}, and our peak performing configuration was able to process the entire Wall Street Journal dataset in about 3.5 seconds. While the speedup is not perfect, we are able to maintain performance increases as we increase threads all the way up to the cores available on the machine. Note that in the scaling figures the number of threads is the total number of both coarse and fine-grained threads. The scaling plots report the best performing of the thread combinations.
+We achieved relatively good scaling as shown in the strong scaling plot, Figure \ref{fig:strong_scaling}, and our peak performing configuration was able to process the entire Wall Street Journal dataset in about 3.5 seconds. While the speedup is not perfect, we were able to maintain performance increases as we increased threads all the way up to the cores available on the machine. Note that in the scaling figures the number of threads is the total number of both coarse and fine-grained threads. The scaling plots report the best performing of the thread combinations.
 
 \begin{figure}[h!]
 \centering
@@ -153,7 +153,7 @@ We achieved relatively good scaling as shown in the strong scaling plot, Figure 
 \label{fig:strong_scaling}
 \end{figure}
 
-We found that the optimal thread combinations either used all coarse-grained or all fine-grained threads (see Figure \ref{fig:combo}). While there's nothing inherent the algorithm that would cause this, we think that processor affinity could be the source of the slowdown. Since the TACC machines have a non-uniform memory architecture (NUMA), the two sockets per node do not share the same memory, so threads scheduled on different sockets incur communication costs when writing to the same address space. OpenMP does not provide an API to specify processor affinity, so we can't deterministically avoid this situation.
+We found that the optimal thread combinations either used all coarse-grained or all fine-grained threads (see Figure \ref{fig:combo}). While there's nothing inherent about the algorithm that would cause this, we think that processor affinity could be the source of the slowdown. Since the TACC machines have a non-uniform memory architecture (NUMA), the two sockets per node do not share the same memory, so threads scheduled on different sockets incur communication costs when writing to the same address space. OpenMP does not provide an API to specify processor affinity, so we can't deterministically avoid this situation.
 
 \begin{figure}[h!]
 \centering
@@ -184,7 +184,7 @@ We were also caught off guard by how much better the GNU-compiled code performed
 
 \Section{Future Work}
 
-Our future work would include further investigation of the poor performance we saw when combining levels of parallelism. The two approaches we would take to address this is using a version of OpenMP that supports processor affinity specification, such as the latest Intel compiler or clang-openmp\footnote{\url{http://clang-omp.github.io}}. Furthermore we could address affinity concerns by using MPI\footnote{\url{http://www.dmoz.org/Computers/Parallel_Computing/Programming/Libraries/MPI}} to create a distributed parallel system. This would also allow us to take advantage of more parallelism and decrease the time required to arrive at a solution.
+Our future work would include further investigation of the poor performance we saw when combining levels of parallelism. The two approaches we would take to address this are using a version of OpenMP that supports processor affinity specification, such as the latest Intel compiler or clang-openmp\footnote{\url{http://clang-omp.github.io}}, and we could also address affinity concerns by using MPI\footnote{\url{http://www.dmoz.org/Computers/Parallel_Computing/Programming/Libraries/MPI}} to create a distributed parallel system. This would also allow us to take advantage of more parallelism and decrease the time required to arrive at a solution.
 
 \Section{Conclusion}
 

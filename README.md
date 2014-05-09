@@ -7,4 +7,16 @@ CS 388 Spring 2014 Final Project
 > Calvin MacKenzie
 
 [Project Proposal](proposal/proposal.pdf)
+[Final Report](report/report.pdf)
 
+## Running the Experiments
+
+```
+$ make perf
+```
+
+## Running Tests
+
+```
+$ make test
+```
