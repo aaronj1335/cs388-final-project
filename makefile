@@ -55,8 +55,10 @@ DEPFILES = $(OBJECTS:%.o=%.d)
 
 PREPROCESS_FILE = $(BIN_DIR)/preprocess.py
 
-REPORT_PDF = report/report.pdf
-REPORT_SRC = report/report.tex
+REPORT_DIR = report
+REPORT_PDF = $(REPORT_DIR)/report.pdf
+REPORT_SRC = $(REPORT_DIR)/report.tex
+REPORT_IMG_DIR = $(REPORT_DIR)/figures
 
 
 # main application
@@ -132,7 +134,7 @@ pre:
 
 report: $(REPORT_PDF)
 
-$(REPORT_PDF): $(REPORT_SRC)
+$(REPORT_PDF): $(REPORT_SRC) $(REPORT_IMG_DIR)/*
 	( cd report && pdflatex report.tex )
 
 
